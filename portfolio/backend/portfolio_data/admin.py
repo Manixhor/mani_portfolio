@@ -57,7 +57,6 @@ class PrettyJSONTextarea(forms.Textarea):
 
 
 class PortfolioConfigForm(forms.ModelForm):
-    hero_eyebrow = forms.CharField(label='Hero Eyebrow', required=False)
     hero_title = forms.CharField(label='Hero Large Title', required=False)
     hero_greeting = forms.CharField(
         label='Greeting',
@@ -239,7 +238,6 @@ class PortfolioConfigForm(forms.ModelForm):
         linkedin = social.get('linkedin', {})
         email = social.get('email', {})
 
-        self.fields['hero_eyebrow'].initial = hero.get('eyebrow', '')
         self.fields['hero_title'].initial = hero.get('title', '')
         self.fields['hero_greeting'].initial = hero.get('greeting', '')
         self.fields['hero_name'].initial = hero.get('name', '')
@@ -316,7 +314,6 @@ class PortfolioConfigForm(forms.ModelForm):
         contact = dict(instance.contact or {})
         social = dict(hero.get('social', {}))
 
-        hero['eyebrow'] = self.clean_text(self.cleaned_data.get('hero_eyebrow')) or self.clean_text(hero.get('eyebrow', ''))
         hero['title'] = self.clean_text(self.cleaned_data.get('hero_title')) or self.clean_text(hero.get('title', ''))
         hero['greeting'] = self.clean_text(self.cleaned_data.get('hero_greeting')) or self.clean_text(hero.get('greeting', ''))
         hero['name'] = self.clean_text(self.cleaned_data.get('hero_name')) or self.clean_text(hero.get('name', ''))
@@ -561,7 +558,6 @@ class PortfolioConfigAdmin(admin.ModelAdmin):
     fieldsets = [
         ('1. Hero', {
             'fields': [
-                'hero_eyebrow',
                 'hero_title',
                 'hero_greeting',
                 'hero_name',

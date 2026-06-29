@@ -144,7 +144,6 @@ async function loadPortfolioConfig() {
 }
 
 function renderHero(hero = {}) {
-  setPlainText('[data-content="hero-eyebrow"]', hero.eyebrow);
   setPlainText('[data-content="hero-title"]', hero.title);
   setPlainText('[data-content="hero-name"]', hero.name);
   setPlainText('[data-content="hero-tagline"]', hero.tagline);
