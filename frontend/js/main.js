@@ -30,6 +30,16 @@ function setSectionTitle(labelSelector, headingSelector, label, heading) {
   setText(headingSelector, cleanHeading);
 }
 
+function splitBulletText(value) {
+  const text = plainText(value).replace(/\s+/g, " ");
+  if (!text) return [];
+
+  const sentences = text.match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) || [text];
+  return sentences
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+}
+
 function setHtml(selector, value) {
   const element = document.querySelector(selector);
   if (element) element.innerHTML = value || "";
@@ -173,9 +183,9 @@ function renderExperience(experience = {}) {
     article.querySelector("span").textContent = plainText(item.company);
 
     const list = article.querySelector("ul");
-    (item.points || []).forEach((point) => {
+    (item.points || []).flatMap(splitBulletText).forEach((point) => {
       const li = document.createElement("li");
-      li.textContent = plainText(point);
+      li.textContent = point;
       list.appendChild(li);
     });
 

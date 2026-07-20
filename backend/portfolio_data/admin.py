@@ -1,4 +1,5 @@
 import json
+import re
 
 from django.contrib import admin
 from django import forms
@@ -185,6 +186,14 @@ class PortfolioConfigForm(forms.ModelForm):
     def clean_text(value):
         return strip_tags(value or '').strip()
 
+    @classmethod
+    def split_bullet_text(cls, value):
+        text = re.sub(r'\s+', ' ', cls.clean_text(value))
+        if not text:
+            return []
+        sentences = re.findall(r'[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$', text)
+        return [sentence.strip() for sentence in sentences if sentence.strip()]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         hero = self.instance.hero or {}
@@ -296,9 +305,9 @@ class PortfolioConfigForm(forms.ModelForm):
             'role': self.clean_text(self.cleaned_data.get('experience_role')),
             'company': self.clean_text(self.cleaned_data.get('experience_company')),
             'points': [
-                self.clean_text(point)
+                bullet
                 for point in (self.cleaned_data.get('experience_points') or '').splitlines()
-                if self.clean_text(point)
+                for bullet in self.split_bullet_text(point)
             ],
         }]
 
