@@ -28,6 +28,19 @@ function plainText(value) {
   return (template.content.textContent || "").trim();
 }
 
+function cleanProjectUrl(value) {
+  const url = plainText(value);
+  if (!url || url === "#" || url.toLowerCase() === "null" || url.toLowerCase() === "none") {
+    return "";
+  }
+
+  if (url.startsWith("/") || url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+
+  return "";
+}
+
 function setPlainText(selector, value) {
   setText(selector, plainText(value));
 }
@@ -261,8 +274,8 @@ function renderProjects(projects = {}) {
     trigger.dataset.title = plainText(project.name);
     trigger.dataset.stack = plainText(stack);
     trigger.dataset.brief = plainText(project.brief || project.description);
-    trigger.dataset.live = project.liveUrl || "#";
-    trigger.dataset.github = project.githubUrl || "#";
+    trigger.dataset.live = cleanProjectUrl(project.liveUrl);
+    trigger.dataset.github = cleanProjectUrl(project.githubUrl);
     trigger.addEventListener("click", () => openProjectModal(trigger));
 
     grid.appendChild(article);
@@ -362,8 +375,10 @@ const modalLinks = projectModal?.querySelector(".project-modal__links");
 function setProjectLink(link, url) {
   if (!link) return false;
 
-  const isPlaceholder = !url || url === "#";
+  const cleanUrl = cleanProjectUrl(url);
+  const isPlaceholder = !cleanUrl;
   link.hidden = isPlaceholder;
+  link.classList.toggle("is-placeholder", isPlaceholder);
 
   if (isPlaceholder) {
     link.href = "#";
@@ -372,7 +387,7 @@ function setProjectLink(link, url) {
     return false;
   }
 
-  link.href = url;
+  link.href = cleanUrl;
   link.target = "_blank";
   link.rel = "noopener noreferrer";
   link.removeAttribute("aria-disabled");
