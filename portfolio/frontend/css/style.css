@@ -408,7 +408,7 @@ a {
   width: 100%;
   height: clamp(210px, 19vw, 300px);
   object-fit: contain;
-  background: var(--soft);
+  background: var(--white);
   filter: grayscale(0.16) contrast(1.04);
   transform: scale(1);
   transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), filter 0.24s ease;
