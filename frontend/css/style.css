@@ -393,6 +393,8 @@ a {
 }
 
 .project-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
   overflow: hidden;
   border: 0;
   border-radius: var(--radius-lg);
@@ -424,6 +426,8 @@ a {
 }
 
 .project-card div {
+  display: flex;
+  flex-direction: column;
   padding: 15px 16px 17px;
 }
 
@@ -434,7 +438,7 @@ a {
 }
 
 .project-card p {
-  min-height: 60px;
+  min-height: 90px;
   margin: 0 0 12px;
   color: var(--ink);
   font-size: 0.9rem;
@@ -450,6 +454,8 @@ a {
 
 .project-card a,
 .project-trigger {
+  margin-top: auto;
+  align-self: flex-start;
   padding: 0;
   border: 0;
   background: transparent;
