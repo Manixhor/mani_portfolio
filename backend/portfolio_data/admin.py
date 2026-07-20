@@ -7,11 +7,39 @@ from django.conf import settings
 from django.utils.html import strip_tags
 from django.utils.html import format_html, format_html_join
 from tinymce.widgets import TinyMCE
-from .models import PortfolioConfig
+from .models import CertificationItem, ExperienceItem, PortfolioConfig, ProjectItem, SkillItem
 
 
 DEFAULT_GITHUB_URL = 'https://github.com/Manixhor'
 DEFAULT_LINKEDIN_URL = 'https://www.linkedin.com/in/manikanta-gururam/'
+
+
+class ExperienceItemForm(forms.ModelForm):
+    class Meta:
+        model = ExperienceItem
+        fields = '__all__'
+        widgets = {
+            'points': forms.Textarea(attrs={'rows': 8}),
+        }
+
+
+class ProjectItemForm(forms.ModelForm):
+    class Meta:
+        model = ProjectItem
+        fields = '__all__'
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'brief': forms.Textarea(attrs={'rows': 5}),
+        }
+
+
+class CertificationItemForm(forms.ModelForm):
+    class Meta:
+        model = CertificationItem
+        fields = '__all__'
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),
+        }
 
 
 class PrettyJSONTextarea(forms.Textarea):
@@ -226,8 +254,10 @@ class PortfolioConfigForm(forms.ModelForm):
         self.fields['contact_image'].label = 'Contact Image Upload'
         self.fields['contact_image'].help_text = 'Upload an image from your computer. This is used before the URL below.'
         for index in range(1, 5):
-            self.fields[f'project_{index}_upload'].label = f'Project {index} Image Upload'
-            self.fields[f'project_{index}_upload'].help_text = 'Upload a project screenshot. This is used before the URL below.'
+            upload_field = self.fields.get(f'project_{index}_upload')
+            if upload_field:
+                upload_field.label = f'Project {index} Image Upload'
+                upload_field.help_text = 'Upload a project screenshot. This is used before the URL below.'
         self.fields['about_section_label'].initial = about.get('sectionLabel', '')
         self.fields['about_heading'].initial = about.get('heading', '')
         about_paragraphs = []
@@ -415,6 +445,112 @@ class PortfolioConfigForm(forms.ModelForm):
         css = {'all': ('admin/css/custom_admin.css',)}
 
 
+@admin.register(ExperienceItem)
+class ExperienceItemAdmin(admin.ModelAdmin):
+    form = ExperienceItemForm
+    list_display = ['role', 'company', 'period', 'order', 'is_visible']
+    list_editable = ['order', 'is_visible']
+    list_filter = ['is_visible']
+    search_fields = ['role', 'company', 'points']
+    fieldsets = [
+        ('Experience Details', {
+            'fields': ['role', 'company', 'period', 'points'],
+        }),
+        ('Display', {
+            'fields': ['order', 'is_visible'],
+        }),
+    ]
+
+    class Media:
+        css = {'all': ('admin/css/custom_admin.css',)}
+
+
+@admin.register(SkillItem)
+class SkillItemAdmin(admin.ModelAdmin):
+    list_display = ['name', 'icon', 'order', 'is_visible']
+    list_editable = ['icon', 'order', 'is_visible']
+    list_filter = ['is_visible']
+    search_fields = ['name', 'icon']
+    fieldsets = [
+        ('Skill Details', {
+            'fields': ['name', 'icon'],
+        }),
+        ('Display', {
+            'fields': ['order', 'is_visible'],
+        }),
+    ]
+
+    class Media:
+        css = {'all': ('admin/css/custom_admin.css',)}
+
+
+@admin.register(CertificationItem)
+class CertificationItemAdmin(admin.ModelAdmin):
+    form = CertificationItemForm
+    list_display = ['title', 'issuer', 'issued_date', 'has_credential', 'order', 'is_visible']
+    list_editable = ['order', 'is_visible']
+    list_filter = ['is_visible', 'issuer']
+    search_fields = ['title', 'issuer', 'description']
+    fieldsets = [
+        ('Certification Details', {
+            'fields': ['title', 'issuer', 'issued_date', 'description'],
+        }),
+        ('Credential', {
+            'fields': ['credential_url'],
+        }),
+        ('Image', {
+            'fields': ['image', 'image_url', 'image_alt'],
+            'description': 'Uploaded image is used first. Image URL is only a fallback.',
+        }),
+        ('Display', {
+            'fields': ['order', 'is_visible'],
+        }),
+    ]
+
+    @admin.display(boolean=True, description='Credential')
+    def has_credential(self, obj):
+        return bool(obj.credential_url)
+
+    class Media:
+        css = {'all': ('admin/css/custom_admin.css',)}
+
+
+@admin.register(ProjectItem)
+class ProjectItemAdmin(admin.ModelAdmin):
+    form = ProjectItemForm
+    list_display = ['name', 'stack', 'show_live_url', 'show_github_url', 'has_live_link', 'has_github_link', 'order', 'is_visible']
+    list_editable = ['show_live_url', 'show_github_url', 'order', 'is_visible']
+    list_filter = ['is_visible']
+    search_fields = ['name', 'description', 'brief', 'stack']
+    fieldsets = [
+        ('Project Details', {
+            'fields': ['name', 'description', 'brief', 'stack'],
+        }),
+        ('Links', {
+            'fields': ['live_url', 'show_live_url', 'github_url', 'show_github_url'],
+            'description': 'Use the checkboxes to show or hide each link on the frontend.',
+        }),
+        ('Image', {
+            'fields': ['image', 'image_url', 'image_alt'],
+            'description': 'Uploaded image is used first. Image URL is only a fallback.',
+        }),
+        ('Display', {
+            'fields': ['order', 'is_visible'],
+        }),
+    ]
+
+    @admin.display(boolean=True, description='Live')
+    def has_live_link(self, obj):
+        return bool(obj.live_url)
+
+    @admin.display(boolean=True, description='GitHub')
+    def has_github_link(self, obj):
+        return bool(obj.github_url)
+
+    class Media:
+        css = {'all': ('admin/css/custom_admin.css',)}
+
+
 @admin.register(PortfolioConfig)
 class PortfolioConfigAdmin(admin.ModelAdmin):
     form = PortfolioConfigForm
@@ -452,52 +588,19 @@ class PortfolioConfigAdmin(admin.ModelAdmin):
             'fields': [
                 'experience_section_label',
                 'experience_heading',
-                'experience_period',
-                'experience_role',
-                'experience_company',
-                'experience_points',
             ],
+            'description': 'Add or edit individual jobs from the Experience admin section.',
         }),
         ('4. Skills', {
-            'fields': ['skills_section_label', 'skills_heading', 'skills_list'],
+            'fields': ['skills_section_label', 'skills_heading'],
+            'description': 'Add or edit individual skills from the Skills admin section.',
         }),
         ('5. Projects', {
             'fields': [
                 'projects_section_label',
                 'projects_heading',
-                'project_1_name',
-                'project_1_description',
-                'project_1_brief',
-                'project_1_stack',
-                'project_1_live',
-                'project_1_github',
-                'project_1_upload',
-                'project_1_image',
-                'project_2_name',
-                'project_2_description',
-                'project_2_brief',
-                'project_2_stack',
-                'project_2_live',
-                'project_2_github',
-                'project_2_upload',
-                'project_2_image',
-                'project_3_name',
-                'project_3_description',
-                'project_3_brief',
-                'project_3_stack',
-                'project_3_live',
-                'project_3_github',
-                'project_3_upload',
-                'project_3_image',
-                'project_4_name',
-                'project_4_description',
-                'project_4_brief',
-                'project_4_stack',
-                'project_4_live',
-                'project_4_github',
-                'project_4_upload',
-                'project_4_image',
             ],
+            'description': 'Add or edit individual projects from the Projects admin section.',
         }),
         ('6. Contact', {
             'fields': [

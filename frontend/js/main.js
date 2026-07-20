@@ -28,6 +28,19 @@ function plainText(value) {
   return (template.content.textContent || "").trim();
 }
 
+function cleanProjectUrl(value) {
+  const url = plainText(value);
+  if (!url || url === "#" || url.toLowerCase() === "null" || url.toLowerCase() === "none") {
+    return "";
+  }
+
+  if (url.startsWith("/") || url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+
+  return "";
+}
+
 function setPlainText(selector, value) {
   setText(selector, plainText(value));
 }
@@ -229,6 +242,70 @@ function renderSkills(skills = {}) {
   });
 }
 
+function renderCertifications(certifications = {}) {
+  setSectionTitle(
+    '[data-content="certifications-label"]',
+    '[data-content="certifications-heading"]',
+    certifications.sectionLabel || "Certifications",
+    certifications.heading || "Certifications"
+  );
+
+  const grid = document.querySelector('[data-render="certifications"]');
+  if (!grid) return;
+
+  const items = certifications.items || [];
+  grid.innerHTML = "";
+
+  if (!items.length) {
+    const empty = document.createElement("article");
+    empty.className = "certification-card certification-card--empty";
+    empty.innerHTML = `
+      <img loading="lazy" referrerpolicy="no-referrer" />
+      <h3></h3>
+      <p></p>
+    `;
+    empty.querySelector("img").src = "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80";
+    empty.querySelector("img").alt = "Certification preview";
+    empty.querySelector("h3").textContent = "Certifications coming soon";
+    empty.querySelector("p").textContent = "New credentials will appear here as they are added.";
+    grid.appendChild(empty);
+    return;
+  }
+
+  items.forEach((item) => {
+    const article = document.createElement("article");
+    article.className = "certification-card";
+    article.innerHTML = `
+      <img loading="lazy" referrerpolicy="no-referrer" />
+      <div>
+        <p class="certification-date"></p>
+        <h3></h3>
+        <span></span>
+        <p class="certification-description"></p>
+        <a class="certification-link" target="_blank" rel="noopener noreferrer">View Credential</a>
+      </div>
+    `;
+
+    const image = article.querySelector("img");
+    image.src = item.imageUrl || "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80";
+    image.alt = plainText(item.imageAlt) || `${plainText(item.title) || "Certification"} preview`;
+    article.querySelector(".certification-date").textContent = plainText(item.issuedDate);
+    article.querySelector("h3").textContent = plainText(item.title);
+    article.querySelector("span").textContent = plainText(item.issuer);
+    article.querySelector(".certification-description").textContent = plainText(item.description);
+
+    const link = article.querySelector(".certification-link");
+    const credentialUrl = cleanProjectUrl(item.credentialUrl);
+    if (credentialUrl) {
+      link.href = credentialUrl;
+    } else {
+      link.hidden = true;
+    }
+
+    grid.appendChild(article);
+  });
+}
+
 function renderProjects(projects = {}) {
   setSectionTitle('[data-content="projects-label"]', '[data-content="projects-heading"]', projects.sectionLabel, projects.heading);
 
@@ -261,8 +338,8 @@ function renderProjects(projects = {}) {
     trigger.dataset.title = plainText(project.name);
     trigger.dataset.stack = plainText(stack);
     trigger.dataset.brief = plainText(project.brief || project.description);
-    trigger.dataset.live = project.liveUrl || "#";
-    trigger.dataset.github = project.githubUrl || "#";
+    trigger.dataset.live = cleanProjectUrl(project.liveUrl);
+    trigger.dataset.github = cleanProjectUrl(project.githubUrl);
     trigger.addEventListener("click", () => openProjectModal(trigger));
 
     grid.appendChild(article);
@@ -323,6 +400,7 @@ function renderPortfolio(config) {
   renderAbout(config.about || {});
   renderExperience(config.experience || {});
   renderSkills(config.skills || {});
+  renderCertifications(config.certifications || {});
   renderProjects(config.projects || {});
   renderContact(config.contact || {}, config.hero || {});
 }
@@ -331,7 +409,7 @@ function setupRevealAnimations() {
   if (motionQuery.matches) return;
 
   const revealItems = document.querySelectorAll(
-    ".split-panel, .experience-card, .skills-grid, .project-card, .contact-panel"
+    ".split-panel, .experience-card, .skills-grid, .certification-card, .project-card, .contact-panel"
   );
 
   revealItems.forEach((item) => item.classList.add("reveal-on-scroll"));
@@ -357,14 +435,28 @@ const modalBrief = document.getElementById("modal-brief");
 const modalStack = document.getElementById("modal-stack");
 const modalLive = document.getElementById("modal-live");
 const modalGithub = document.getElementById("modal-github");
+const modalLinks = projectModal?.querySelector(".project-modal__links");
 
 function setProjectLink(link, url) {
-  if (!link) return;
+  if (!link) return false;
 
-  const isPlaceholder = !url || url === "#";
-  link.href = isPlaceholder ? "#" : url;
+  const cleanUrl = cleanProjectUrl(url);
+  const isPlaceholder = !cleanUrl;
+  link.hidden = isPlaceholder;
   link.classList.toggle("is-placeholder", isPlaceholder);
-  link.setAttribute("aria-disabled", String(isPlaceholder));
+
+  if (isPlaceholder) {
+    link.href = "#";
+    link.removeAttribute("target");
+    link.setAttribute("aria-disabled", "true");
+    return false;
+  }
+
+  link.href = cleanUrl;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.removeAttribute("aria-disabled");
+  return true;
 }
 
 function openProjectModal(trigger) {
@@ -373,8 +465,11 @@ function openProjectModal(trigger) {
   modalTitle.textContent = trigger.dataset.title || "Project";
   modalBrief.textContent = trigger.dataset.brief || "";
   modalStack.textContent = trigger.dataset.stack || "";
-  setProjectLink(modalLive, trigger.dataset.live);
-  setProjectLink(modalGithub, trigger.dataset.github);
+  const hasLiveLink = setProjectLink(modalLive, trigger.dataset.live);
+  const hasGithubLink = setProjectLink(modalGithub, trigger.dataset.github);
+  if (modalLinks) {
+    modalLinks.hidden = !hasLiveLink && !hasGithubLink;
+  }
 
   projectModal.classList.add("is-open");
   projectModal.setAttribute("aria-hidden", "false");
@@ -421,17 +516,39 @@ function setupContactForm() {
       });
 
       if (!response.ok) {
-        throw new Error("Message could not be sent.");
+        let detail = "";
+        try {
+          const data = await response.json();
+          detail = data.detail || Object.values(data).flat().join(" ");
+        } catch (_error) {
+          detail = "";
+        }
+
+        if (response.status === 429) {
+          throw new Error("Too many tries. Please wait a minute and send again.");
+        }
+
+        throw new Error(detail || "Message could not be sent.");
       }
 
       form.reset();
       setContactStatus("Message sent. I will get back to you soon.", "success");
     } catch (error) {
       console.error(error);
-      setContactStatus("Message failed. Please email me directly.", "error");
+      setContactStatus(error.message || "Message failed. Please email me directly.", "error");
     } finally {
       submitButton.disabled = false;
     }
+  });
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((error) => {
+      console.error("Service worker registration failed.", error);
+    });
   });
 }
 
@@ -466,6 +583,7 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
 
 window.addEventListener("scroll", updateProgress, { passive: true });
 window.addEventListener("load", updateProgress);
+registerServiceWorker();
 
 window.addEventListener("DOMContentLoaded", async () => {
   setupContactForm();
