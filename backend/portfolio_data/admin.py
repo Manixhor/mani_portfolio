@@ -7,7 +7,7 @@ from django.conf import settings
 from django.utils.html import strip_tags
 from django.utils.html import format_html, format_html_join
 from tinymce.widgets import TinyMCE
-from .models import ExperienceItem, PortfolioConfig, ProjectItem, SkillItem
+from .models import CertificationItem, ExperienceItem, PortfolioConfig, ProjectItem, SkillItem
 
 
 DEFAULT_GITHUB_URL = 'https://github.com/Manixhor'
@@ -30,6 +30,15 @@ class ProjectItemForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
             'brief': forms.Textarea(attrs={'rows': 5}),
+        }
+
+
+class CertificationItemForm(forms.ModelForm):
+    class Meta:
+        model = CertificationItem
+        fields = '__all__'
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),
         }
 
 
@@ -245,8 +254,10 @@ class PortfolioConfigForm(forms.ModelForm):
         self.fields['contact_image'].label = 'Contact Image Upload'
         self.fields['contact_image'].help_text = 'Upload an image from your computer. This is used before the URL below.'
         for index in range(1, 5):
-            self.fields[f'project_{index}_upload'].label = f'Project {index} Image Upload'
-            self.fields[f'project_{index}_upload'].help_text = 'Upload a project screenshot. This is used before the URL below.'
+            upload_field = self.fields.get(f'project_{index}_upload')
+            if upload_field:
+                upload_field.label = f'Project {index} Image Upload'
+                upload_field.help_text = 'Upload a project screenshot. This is used before the URL below.'
         self.fields['about_section_label'].initial = about.get('sectionLabel', '')
         self.fields['about_heading'].initial = about.get('heading', '')
         about_paragraphs = []
@@ -468,6 +479,33 @@ class SkillItemAdmin(admin.ModelAdmin):
             'fields': ['order', 'is_visible'],
         }),
     ]
+
+    class Media:
+        css = {'all': ('admin/css/custom_admin.css',)}
+
+
+@admin.register(CertificationItem)
+class CertificationItemAdmin(admin.ModelAdmin):
+    form = CertificationItemForm
+    list_display = ['title', 'issuer', 'issued_date', 'has_credential', 'order', 'is_visible']
+    list_editable = ['order', 'is_visible']
+    list_filter = ['is_visible', 'issuer']
+    search_fields = ['title', 'issuer', 'description']
+    fieldsets = [
+        ('Certification Details', {
+            'fields': ['title', 'issuer', 'issued_date', 'description'],
+        }),
+        ('Credential', {
+            'fields': ['credential_url'],
+        }),
+        ('Display', {
+            'fields': ['order', 'is_visible'],
+        }),
+    ]
+
+    @admin.display(boolean=True, description='Credential')
+    def has_credential(self, obj):
+        return bool(obj.credential_url)
 
     class Media:
         css = {'all': ('admin/css/custom_admin.css',)}

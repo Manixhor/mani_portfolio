@@ -67,6 +67,24 @@ class SkillItem(models.Model):
         return self.name
 
 
+class CertificationItem(models.Model):
+    title = models.CharField(max_length=180)
+    issuer = models.CharField(max_length=180, blank=True)
+    issued_date = models.CharField(max_length=120, blank=True)
+    credential_url = models.URLField(blank=True)
+    description = models.TextField(blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_visible = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', '-id']
+        verbose_name = 'Certification'
+        verbose_name_plural = 'Certifications'
+
+    def __str__(self):
+        return self.title
+
+
 class ProjectItem(models.Model):
     name = models.CharField(max_length=160)
     description = models.TextField(blank=True)

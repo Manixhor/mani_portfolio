@@ -1,17 +1,18 @@
 from rest_framework import serializers
 from django.conf import settings
 
-from .models import ExperienceItem, PortfolioConfig, ProjectItem, SkillItem
+from .models import CertificationItem, ExperienceItem, PortfolioConfig, ProjectItem, SkillItem
 
 
 class PortfolioConfigSerializer(serializers.ModelSerializer):
     experience = serializers.SerializerMethodField()
     skills = serializers.SerializerMethodField()
+    certifications = serializers.SerializerMethodField()
     projects = serializers.SerializerMethodField()
 
     class Meta:
         model = PortfolioConfig
-        fields = ['hero', 'about', 'experience', 'skills', 'projects', 'contact', 'footer', 'updated_at']
+        fields = ['hero', 'about', 'experience', 'skills', 'certifications', 'projects', 'contact', 'footer', 'updated_at']
 
     def get_experience(self, obj):
         experience = dict(obj.experience or {})
@@ -40,6 +41,26 @@ class PortfolioConfigSerializer(serializers.ModelSerializer):
                 for item in items
             ]
         return skills
+
+    def get_certifications(self, obj):
+        certifications = {
+            'sectionLabel': 'Certifications',
+            'heading': 'Certifications',
+            'items': [],
+        }
+        items = list(CertificationItem.objects.filter(is_visible=True))
+        if items:
+            certifications['items'] = [
+                {
+                    'title': item.title,
+                    'issuer': item.issuer,
+                    'issuedDate': item.issued_date,
+                    'credentialUrl': item.credential_url,
+                    'description': item.description,
+                }
+                for item in items
+            ]
+        return certifications
 
     def get_projects(self, obj):
         projects = dict(obj.projects or {})

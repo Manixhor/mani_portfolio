@@ -23,7 +23,7 @@
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/static/icons/icon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="/static/css/style.css?v=3" />
 </head>
 <body>
   <div id="progress-bar" aria-hidden="true"></div>
@@ -34,6 +34,7 @@
         <a href="#hero">Home</a>
         <a href="#about">About</a>
         <a href="#experience">Experience</a>
+        <a href="#certifications">Certifications</a>
         <a href="#projects">Projects</a>
         <a href="#skills">Skills</a>
         <a href="#contact">Contact</a>
@@ -76,6 +77,14 @@
         <h2 data-content="skills-heading"></h2>
       </div>
       <div class="skills-grid" aria-label="Technical skills" data-render="skills"></div>
+    </section>
+
+    <section id="certifications" class="certifications-panel section-panel">
+      <div class="section-heading">
+        <p class="section-kicker" data-content="certifications-label"></p>
+        <h2 data-content="certifications-heading"></h2>
+      </div>
+      <div class="certification-grid" data-render="certifications"></div>
     </section>
 
     <section id="projects" class="projects-panel section-panel">
@@ -142,6 +151,6 @@
     </section>
   </div>
 
-  <script src="/static/js/main.js"></script>
+  <script src="/static/js/main.js?v=3"></script>
 </body>
 </html>
