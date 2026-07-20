@@ -1,0 +1,43 @@
+databases:
+  - name: mani-portfolio-db
+    databaseName: mani_portfolio
+    user: mani_portfolio
+
+services:
+  - type: web
+    name: mani-portfolio
+    runtime: python
+    buildCommand: ./build.sh
+    startCommand: ./start.sh
+    healthCheckPath: /healthz/
+    disk:
+      name: media
+      mountPath: /opt/render/project/src/backend/media
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mani-portfolio-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: mani
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: manigururam06@gmail.com
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
+      - key: SECURE_SSL_REDIRECT
+        value: True
+      - key: SESSION_COOKIE_SECURE
+        value: True
+      - key: CSRF_COOKIE_SECURE
+        value: True
+      - key: SECURE_HSTS_SECONDS
+        value: 31536000
+      - key: SECURE_HSTS_INCLUDE_SUBDOMAINS
+        value: True
+      - key: SECURE_HSTS_PRELOAD
+        value: True
