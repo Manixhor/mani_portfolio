@@ -8,7 +8,8 @@ Production-ready portfolio with a Django backend for admin-managed content, cont
 - `backend/` - Django API and admin
 - `backend/.env.example` - required production environment variables
 - `backend/Procfile` - Gunicorn start command for platforms such as Render/Heroku-style hosts
-- `Dockerfile` - Northflank-ready container build
+- `requirements.txt` - Northflank buildpack dependency entrypoint
+- `Procfile` - Northflank buildpack start command
 
 ## Local Development
 
@@ -69,28 +70,25 @@ gunicorn portfolio_backend.wsgi:application
 - `POST /api/analytics/track/`
 - `GET /admin/`
 
-## Northflank Deployment
+## Northflank Deployment Without Docker
 
 Use one Northflank combined service for this project.
 
 Build settings:
 
 ```text
-Build type: Dockerfile
+Build type: Buildpack
 Build context: /portfolio
-Dockerfile path: /portfolio/Dockerfile
 Port: 8000
 Protocol: HTTP
 Public: enabled
 Health check path: /healthz/
 ```
 
-Runtime command is already in `backend/start.sh`:
+Runtime command is already in `Procfile`:
 
 ```bash
-python manage.py migrate --noinput
-python manage.py collectstatic --noinput
-gunicorn portfolio_backend.wsgi:application --bind 0.0.0.0:$PORT
+cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn portfolio_backend.wsgi:application --bind 0.0.0.0:$PORT
 ```
 
 Required Northflank variables:
