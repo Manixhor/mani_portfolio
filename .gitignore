@@ -1,18 +1,14 @@
-# Python
-__pycache__/
-*.py[cod]
-*.sqlite3
-db.sqlite3
-
-# Environments and secrets
+.DS_Store
 .env
-.venv/
-venv/
+*.pyc
+__pycache__/
+.pytest_cache/
 
-# Django generated files
+backend/db.sqlite3
+backend/media/
 backend/staticfiles/
 
-# OS/editor
-.DS_Store
-.vscode/
-.idea/
+venv/
+.venv/
+env/
+node_modules/
