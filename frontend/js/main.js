@@ -357,14 +357,26 @@ const modalBrief = document.getElementById("modal-brief");
 const modalStack = document.getElementById("modal-stack");
 const modalLive = document.getElementById("modal-live");
 const modalGithub = document.getElementById("modal-github");
+const modalLinks = projectModal?.querySelector(".project-modal__links");
 
 function setProjectLink(link, url) {
-  if (!link) return;
+  if (!link) return false;
 
   const isPlaceholder = !url || url === "#";
-  link.href = isPlaceholder ? "#" : url;
-  link.classList.toggle("is-placeholder", isPlaceholder);
-  link.setAttribute("aria-disabled", String(isPlaceholder));
+  link.hidden = isPlaceholder;
+
+  if (isPlaceholder) {
+    link.href = "#";
+    link.removeAttribute("target");
+    link.setAttribute("aria-disabled", "true");
+    return false;
+  }
+
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.removeAttribute("aria-disabled");
+  return true;
 }
 
 function openProjectModal(trigger) {
@@ -373,8 +385,11 @@ function openProjectModal(trigger) {
   modalTitle.textContent = trigger.dataset.title || "Project";
   modalBrief.textContent = trigger.dataset.brief || "";
   modalStack.textContent = trigger.dataset.stack || "";
-  setProjectLink(modalLive, trigger.dataset.live);
-  setProjectLink(modalGithub, trigger.dataset.github);
+  const hasLiveLink = setProjectLink(modalLive, trigger.dataset.live);
+  const hasGithubLink = setProjectLink(modalGithub, trigger.dataset.github);
+  if (modalLinks) {
+    modalLinks.hidden = !hasLiveLink && !hasGithubLink;
+  }
 
   projectModal.classList.add("is-open");
   projectModal.setAttribute("aria-hidden", "false");
@@ -421,17 +436,39 @@ function setupContactForm() {
       });
 
       if (!response.ok) {
-        throw new Error("Message could not be sent.");
+        let detail = "";
+        try {
+          const data = await response.json();
+          detail = data.detail || Object.values(data).flat().join(" ");
+        } catch (_error) {
+          detail = "";
+        }
+
+        if (response.status === 429) {
+          throw new Error("Too many tries. Please wait a minute and send again.");
+        }
+
+        throw new Error(detail || "Message could not be sent.");
       }
 
       form.reset();
       setContactStatus("Message sent. I will get back to you soon.", "success");
     } catch (error) {
       console.error(error);
-      setContactStatus("Message failed. Please email me directly.", "error");
+      setContactStatus(error.message || "Message failed. Please email me directly.", "error");
     } finally {
       submitButton.disabled = false;
     }
+  });
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((error) => {
+      console.error("Service worker registration failed.", error);
+    });
   });
 }
 
@@ -466,6 +503,7 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
 
 window.addEventListener("scroll", updateProgress, { passive: true });
 window.addEventListener("load", updateProgress);
+registerServiceWorker();
 
 window.addEventListener("DOMContentLoaded", async () => {
   setupContactForm();
