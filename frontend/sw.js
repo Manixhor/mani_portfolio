@@ -1,4 +1,4 @@
-const CACHE_NAME = "mani-portfolio-v1";
+const CACHE_NAME = "mani-portfolio-v2";
 const APP_SHELL = [
   "/",
   "/static/css/style.css",
@@ -28,6 +28,17 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
 
   if (request.method !== "GET" || url.origin !== self.location.origin) {
+    return;
+  }
+
+  if (
+    url.pathname.startsWith("/admin/") ||
+    url.pathname.startsWith("/tinymce/") ||
+    url.pathname.startsWith("/media/") ||
+    url.pathname.startsWith("/static/admin/") ||
+    url.pathname.startsWith("/static/admin_interface/") ||
+    url.pathname.startsWith("/static/tinymce/")
+  ) {
     return;
   }
 
