@@ -10,6 +10,10 @@ from tinymce.widgets import TinyMCE
 from .models import PortfolioConfig
 
 
+DEFAULT_GITHUB_URL = 'https://github.com/Manixhor'
+DEFAULT_LINKEDIN_URL = 'https://www.linkedin.com/in/manikanta-gururam/'
+
+
 class PrettyJSONTextarea(forms.Textarea):
     def format_value(self, value):
         if value in (None, ''):
@@ -214,8 +218,8 @@ class PortfolioConfigForm(forms.ModelForm):
         self.fields['hero_tagline'].initial = hero.get('tagline', '')
         self.fields['hero_year'].initial = hero.get('year', '')
         self.fields['resume_url'].initial = '' if hero.get('resumeUrl') == '#' else hero.get('resumeUrl', '')
-        self.fields['github_url'].initial = '' if github.get('url') == '#' else github.get('url', '')
-        self.fields['linkedin_url'].initial = '' if linkedin.get('url') == '#' else linkedin.get('url', '')
+        self.fields['github_url'].initial = '' if github.get('url') == '#' else github.get('url', DEFAULT_GITHUB_URL)
+        self.fields['linkedin_url'].initial = '' if linkedin.get('url') == '#' else linkedin.get('url', DEFAULT_LINKEDIN_URL)
         self.fields['hero_email'].initial = email.get('url', '').replace('mailto:', '')
         self.fields['about_image'].label = 'About Image Upload'
         self.fields['about_image'].help_text = 'Upload an image from your computer. This is used before the URL below.'
@@ -366,14 +370,14 @@ class PortfolioConfigForm(forms.ModelForm):
         contact['imageAlt'] = self.clean_text(self.cleaned_data.get('contact_image_alt')) or self.clean_text(contact.get('imageAlt', ''))
         contact['quote'] = self.clean_text(self.cleaned_data.get('contact_quote')) or self.clean_text(contact.get('quote', ''))
 
-        github_url = self.cleaned_data.get('github_url')
+        github_url = self.cleaned_data.get('github_url') or DEFAULT_GITHUB_URL
         if github_url:
             social['github'] = {
                 'url': github_url,
                 'label': 'GitHub',
             }
 
-        linkedin_url = self.cleaned_data.get('linkedin_url')
+        linkedin_url = self.cleaned_data.get('linkedin_url') or DEFAULT_LINKEDIN_URL
         if linkedin_url:
             social['linkedin'] = {
                 'url': linkedin_url,

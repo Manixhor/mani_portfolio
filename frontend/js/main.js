@@ -6,6 +6,16 @@ const API_BASE = window.PORTFOLIO_API_BASE || (
 );
 const progressBar = document.getElementById("progress-bar");
 const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+const DEFAULT_SOCIAL = {
+  github: {
+    url: "https://github.com/Manixhor",
+    label: "GitHub",
+  },
+  linkedin: {
+    url: "https://www.linkedin.com/in/manikanta-gururam/",
+    label: "LinkedIn",
+  },
+};
 
 function setText(selector, value) {
   const element = document.querySelector(selector);
@@ -279,7 +289,7 @@ function renderContact(contact = {}, hero = {}) {
     });
   }
 
-  const social = hero.social || {};
+  const social = { ...DEFAULT_SOCIAL, ...(hero.social || {}) };
   const socialLinks = document.querySelector('[data-render="social-links"]');
   if (socialLinks) {
     socialLinks.innerHTML = "";
