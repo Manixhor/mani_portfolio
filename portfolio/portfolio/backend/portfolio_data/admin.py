@@ -1,17 +1,11 @@
 import json
-import re
 
 from django.contrib import admin
 from django import forms
 from django.conf import settings
-from django.utils.html import strip_tags
 from django.utils.html import format_html, format_html_join
 from tinymce.widgets import TinyMCE
 from .models import PortfolioConfig
-
-
-DEFAULT_GITHUB_URL = 'https://github.com/Manixhor'
-DEFAULT_LINKEDIN_URL = 'https://www.linkedin.com/in/manikanta-gururam/'
 
 
 class PrettyJSONTextarea(forms.Textarea):
@@ -186,18 +180,6 @@ class PortfolioConfigForm(forms.ModelForm):
             return f'{settings.PUBLIC_BACKEND_URL}{file_field.url}'
         return ''
 
-    @staticmethod
-    def clean_text(value):
-        return strip_tags(value or '').strip()
-
-    @classmethod
-    def split_bullet_text(cls, value):
-        text = re.sub(r'\s+', ' ', cls.clean_text(value))
-        if not text:
-            return []
-        sentences = re.findall(r'[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$', text)
-        return [sentence.strip() for sentence in sentences if sentence.strip()]
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         hero = self.instance.hero or {}
@@ -218,8 +200,8 @@ class PortfolioConfigForm(forms.ModelForm):
         self.fields['hero_tagline'].initial = hero.get('tagline', '')
         self.fields['hero_year'].initial = hero.get('year', '')
         self.fields['resume_url'].initial = '' if hero.get('resumeUrl') == '#' else hero.get('resumeUrl', '')
-        self.fields['github_url'].initial = '' if github.get('url') == '#' else github.get('url', DEFAULT_GITHUB_URL)
-        self.fields['linkedin_url'].initial = '' if linkedin.get('url') == '#' else linkedin.get('url', DEFAULT_LINKEDIN_URL)
+        self.fields['github_url'].initial = '' if github.get('url') == '#' else github.get('url', '')
+        self.fields['linkedin_url'].initial = '' if linkedin.get('url') == '#' else linkedin.get('url', '')
         self.fields['hero_email'].initial = email.get('url', '').replace('mailto:', '')
         self.fields['about_image'].label = 'About Image Upload'
         self.fields['about_image'].help_text = 'Upload an image from your computer. This is used before the URL below.'
@@ -286,32 +268,32 @@ class PortfolioConfigForm(forms.ModelForm):
         contact = dict(instance.contact or {})
         social = dict(hero.get('social', {}))
 
-        hero['eyebrow'] = self.clean_text(self.cleaned_data.get('hero_eyebrow')) or self.clean_text(hero.get('eyebrow', ''))
-        hero['title'] = self.clean_text(self.cleaned_data.get('hero_title')) or self.clean_text(hero.get('title', ''))
-        hero['greeting'] = self.clean_text(self.cleaned_data.get('hero_greeting')) or self.clean_text(hero.get('greeting', ''))
-        hero['name'] = self.clean_text(self.cleaned_data.get('hero_name')) or self.clean_text(hero.get('name', ''))
-        hero['tagline'] = self.clean_text(self.cleaned_data.get('hero_tagline')) or self.clean_text(hero.get('tagline', ''))
-        hero['year'] = self.clean_text(self.cleaned_data.get('hero_year')) or self.clean_text(hero.get('year', ''))
+        hero['eyebrow'] = self.cleaned_data.get('hero_eyebrow') or hero.get('eyebrow', '')
+        hero['title'] = self.cleaned_data.get('hero_title') or hero.get('title', '')
+        hero['greeting'] = self.cleaned_data.get('hero_greeting') or hero.get('greeting', '')
+        hero['name'] = self.cleaned_data.get('hero_name') or hero.get('name', '')
+        hero['tagline'] = self.cleaned_data.get('hero_tagline') or hero.get('tagline', '')
+        hero['year'] = self.cleaned_data.get('hero_year') or hero.get('year', '')
         hero['resumeUrl'] = self.cleaned_data.get('resume_url') or hero.get('resumeUrl', '#')
 
-        about['sectionLabel'] = self.clean_text(self.cleaned_data.get('about_section_label')) or self.clean_text(about.get('sectionLabel', ''))
-        about['heading'] = self.clean_text(self.cleaned_data.get('about_heading')) or self.clean_text(about.get('heading', ''))
+        about['sectionLabel'] = self.cleaned_data.get('about_section_label') or about.get('sectionLabel', '')
+        about['heading'] = self.cleaned_data.get('about_heading') or about.get('heading', '')
         about_html = self.cleaned_data.get('about_html')
         if about_html:
             about['paragraphs'] = [about_html]
         about['imageUrl'] = self.file_url(instance.about_image) or self.cleaned_data.get('about_image_url') or about.get('imageUrl', '')
-        about['imageAlt'] = self.clean_text(self.cleaned_data.get('about_image_alt')) or self.clean_text(about.get('imageAlt', ''))
+        about['imageAlt'] = self.cleaned_data.get('about_image_alt') or about.get('imageAlt', '')
 
-        experience['sectionLabel'] = self.clean_text(self.cleaned_data.get('experience_section_label')) or self.clean_text(experience.get('sectionLabel', ''))
-        experience['heading'] = self.clean_text(self.cleaned_data.get('experience_heading')) or self.clean_text(experience.get('heading', ''))
+        experience['sectionLabel'] = self.cleaned_data.get('experience_section_label') or experience.get('sectionLabel', '')
+        experience['heading'] = self.cleaned_data.get('experience_heading') or experience.get('heading', '')
         experience['items'] = [{
-            'period': self.clean_text(self.cleaned_data.get('experience_period')),
-            'role': self.clean_text(self.cleaned_data.get('experience_role')),
-            'company': self.clean_text(self.cleaned_data.get('experience_company')),
+            'period': self.cleaned_data.get('experience_period') or '',
+            'role': self.cleaned_data.get('experience_role') or '',
+            'company': self.cleaned_data.get('experience_company') or '',
             'points': [
-                bullet
+                point.strip()
                 for point in (self.cleaned_data.get('experience_points') or '').splitlines()
-                for bullet in self.split_bullet_text(point)
+                if point.strip()
             ],
         }]
 
@@ -331,12 +313,12 @@ class PortfolioConfigForm(forms.ModelForm):
             'fastapi': 'devicon-fastapi-plain',
         }
         skill_names = [
-            self.clean_text(skill)
+            skill.strip()
             for skill in (self.cleaned_data.get('skills_list') or '').split(',')
-            if self.clean_text(skill)
+            if skill.strip()
         ]
-        skills['sectionLabel'] = self.clean_text(self.cleaned_data.get('skills_section_label')) or self.clean_text(skills.get('sectionLabel', ''))
-        skills['heading'] = self.clean_text(self.cleaned_data.get('skills_heading')) or self.clean_text(skills.get('heading', ''))
+        skills['sectionLabel'] = self.cleaned_data.get('skills_section_label') or skills.get('sectionLabel', '')
+        skills['heading'] = self.cleaned_data.get('skills_heading') or skills.get('heading', '')
         skills['items'] = [
             {'name': name, 'icon': icon_map.get(name.lower(), 'devicon-code-plain')}
             for name in skill_names
@@ -344,40 +326,40 @@ class PortfolioConfigForm(forms.ModelForm):
 
         project_items = []
         for index in range(1, 5):
-            name = self.clean_text(self.cleaned_data.get(f'project_{index}_name'))
+            name = self.cleaned_data.get(f'project_{index}_name')
             if not name:
                 continue
             project_items.append({
                 'name': name,
-                'description': self.clean_text(self.cleaned_data.get(f'project_{index}_description')),
-                'brief': self.clean_text(self.cleaned_data.get(f'project_{index}_brief')),
-                'stack': self.clean_text(self.cleaned_data.get(f'project_{index}_stack')),
+                'description': self.cleaned_data.get(f'project_{index}_description') or '',
+                'brief': self.cleaned_data.get(f'project_{index}_brief') or '',
+                'stack': self.cleaned_data.get(f'project_{index}_stack') or '',
                 'liveUrl': self.cleaned_data.get(f'project_{index}_live') or '#',
                 'githubUrl': self.cleaned_data.get(f'project_{index}_github') or '#',
                 'imageUrl': self.file_url(getattr(instance, f'project_{index}_upload')) or self.cleaned_data.get(f'project_{index}_image') or '',
             })
-        projects['sectionLabel'] = self.clean_text(self.cleaned_data.get('projects_section_label')) or self.clean_text(projects.get('sectionLabel', ''))
-        projects['heading'] = self.clean_text(self.cleaned_data.get('projects_heading')) or self.clean_text(projects.get('heading', ''))
+        projects['sectionLabel'] = self.cleaned_data.get('projects_section_label') or projects.get('sectionLabel', '')
+        projects['heading'] = self.cleaned_data.get('projects_heading') or projects.get('heading', '')
         projects['items'] = project_items
 
-        contact['sectionLabel'] = self.clean_text(self.cleaned_data.get('contact_section_label')) or self.clean_text(contact.get('sectionLabel', ''))
-        contact['heading'] = self.clean_text(self.cleaned_data.get('contact_heading')) or self.clean_text(contact.get('heading', ''))
+        contact['sectionLabel'] = self.cleaned_data.get('contact_section_label') or contact.get('sectionLabel', '')
+        contact['heading'] = self.cleaned_data.get('contact_heading') or contact.get('heading', '')
         contact['subtitle'] = self.cleaned_data.get('contact_subtitle') or contact.get('subtitle', '')
-        contact['email'] = self.clean_text(self.cleaned_data.get('contact_email')) or self.clean_text(contact.get('email', ''))
-        contact['phone'] = self.clean_text(self.cleaned_data.get('contact_phone')) or self.clean_text(contact.get('phone', ''))
-        contact['location'] = self.clean_text(self.cleaned_data.get('contact_location')) or self.clean_text(contact.get('location', ''))
+        contact['email'] = self.cleaned_data.get('contact_email') or contact.get('email', '')
+        contact['phone'] = self.cleaned_data.get('contact_phone') or contact.get('phone', '')
+        contact['location'] = self.cleaned_data.get('contact_location') or contact.get('location', '')
         contact['imageUrl'] = self.file_url(instance.contact_image) or self.cleaned_data.get('contact_image_url') or contact.get('imageUrl', '')
-        contact['imageAlt'] = self.clean_text(self.cleaned_data.get('contact_image_alt')) or self.clean_text(contact.get('imageAlt', ''))
-        contact['quote'] = self.clean_text(self.cleaned_data.get('contact_quote')) or self.clean_text(contact.get('quote', ''))
+        contact['imageAlt'] = self.cleaned_data.get('contact_image_alt') or contact.get('imageAlt', '')
+        contact['quote'] = self.cleaned_data.get('contact_quote') or contact.get('quote', '')
 
-        github_url = self.cleaned_data.get('github_url') or DEFAULT_GITHUB_URL
+        github_url = self.cleaned_data.get('github_url')
         if github_url:
             social['github'] = {
                 'url': github_url,
                 'label': 'GitHub',
             }
 
-        linkedin_url = self.cleaned_data.get('linkedin_url') or DEFAULT_LINKEDIN_URL
+        linkedin_url = self.cleaned_data.get('linkedin_url')
         if linkedin_url:
             social['linkedin'] = {
                 'url': linkedin_url,
