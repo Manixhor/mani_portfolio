@@ -23,3 +23,69 @@ class PortfolioConfig(models.Model):
 
     def __str__(self):
         return "Portfolio Content"
+
+
+class ExperienceItem(models.Model):
+    role = models.CharField(max_length=160)
+    company = models.CharField(max_length=180)
+    period = models.CharField(max_length=120, blank=True)
+    points = models.TextField(
+        blank=True,
+        help_text='Write one bullet point per line.',
+    )
+    order = models.PositiveIntegerField(default=0)
+    is_visible = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', '-id']
+        verbose_name = 'Experience'
+        verbose_name_plural = 'Experience'
+
+    def __str__(self):
+        return f'{self.role} at {self.company}'
+
+    def point_list(self):
+        return [point.strip() for point in self.points.splitlines() if point.strip()]
+
+
+class SkillItem(models.Model):
+    name = models.CharField(max_length=80)
+    icon = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text='Optional Devicon class, for example: devicon-python-plain',
+    )
+    order = models.PositiveIntegerField(default=0)
+    is_visible = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = 'Skill'
+        verbose_name_plural = 'Skills'
+
+    def __str__(self):
+        return self.name
+
+
+class ProjectItem(models.Model):
+    name = models.CharField(max_length=160)
+    description = models.TextField(blank=True)
+    brief = models.TextField(blank=True)
+    stack = models.CharField(max_length=240, blank=True)
+    live_url = models.URLField(blank=True)
+    show_live_url = models.BooleanField(default=True)
+    github_url = models.URLField(blank=True)
+    show_github_url = models.BooleanField(default=True)
+    image = models.ImageField(upload_to='portfolio/projects/', blank=True, null=True)
+    image_url = models.URLField(blank=True)
+    image_alt = models.CharField(max_length=180, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_visible = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', '-id']
+        verbose_name = 'Project'
+        verbose_name_plural = 'Projects'
+
+    def __str__(self):
+        return self.name
