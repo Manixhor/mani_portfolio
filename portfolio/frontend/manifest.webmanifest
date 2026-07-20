@@ -1,0 +1,32 @@
+{
+  "name": "Mani Portfolio",
+  "short_name": "Mani",
+  "description": "Portfolio of Mani, Python and Django developer.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "categories": ["portfolio", "productivity", "developer"],
+  "icons": [
+    {
+      "src": "/static/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Projects",
+      "short_name": "Projects",
+      "url": "/#projects"
+    },
+    {
+      "name": "Contact",
+      "short_name": "Contact",
+      "url": "/#contact"
+    }
+  ]
+}

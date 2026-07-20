@@ -10,6 +10,9 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv(
 RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default='')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+if not DEBUG:
+    ALLOWED_HOSTS.append('mani-portfolio-dyrf.onrender.com')
+    ALLOWED_HOSTS.append('.onrender.com')
 
 INSTALLED_APPS = [
     # Admin interface (must be before admin)
@@ -108,6 +111,8 @@ CORS_ALLOWED_ORIGINS = config(
 )
 if RENDER_EXTERNAL_HOSTNAME:
     CORS_ALLOWED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
+if not DEBUG:
+    CORS_ALLOWED_ORIGIN_REGEXES = [r'^https://.*\.onrender\.com$']
 
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
@@ -116,6 +121,9 @@ CSRF_TRUSTED_ORIGINS = config(
 )
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
+if not DEBUG:
+    CSRF_TRUSTED_ORIGINS.append('https://mani-portfolio-dyrf.onrender.com')
+    CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
 
 CORS_ALLOW_METHODS = ['GET', 'POST', 'OPTIONS']
 
@@ -156,7 +164,7 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '120/min',
         'user': '600/min',
-        'contact': '5/min',
+        'contact': '30/min',
         'analytics': '60/min',
     },
 }

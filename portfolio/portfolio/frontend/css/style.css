@@ -286,6 +286,7 @@ a {
 
 .experience-panel,
 .skills-panel,
+.certifications-panel,
 .projects-panel {
   padding: 26px clamp(24px, 7vw, 84px) 34px;
 }
@@ -384,6 +385,103 @@ a {
 .skill-item span {
   font-size: 0.9rem;
   font-weight: 500;
+}
+
+.certification-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 2.6vw, 28px);
+}
+
+.certification-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 220px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--white);
+}
+
+.certification-card img {
+  width: 100%;
+  aspect-ratio: 16 / 8.2;
+  object-fit: cover;
+  filter: grayscale(0.16) contrast(1.04);
+}
+
+.certification-card > div {
+  display: grid;
+  grid-template-rows: auto minmax(3.3em, auto) minmax(1.2em, auto) minmax(6.1em, 1fr) auto;
+  padding: 22px 24px 24px;
+}
+
+.certification-date {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.certification-card h3 {
+  margin: 0 0 8px;
+  min-height: 3.3em;
+  font-size: clamp(1.18rem, 2.4vw, 1.55rem);
+  line-height: 1.08;
+  font-weight: 900;
+}
+
+.certification-card span {
+  min-height: 1.2em;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.certification-description {
+  margin: 18px 0 22px;
+  min-height: 6.1em;
+  color: var(--ink);
+  font-size: 0.94rem;
+  line-height: 1.45;
+}
+
+.certification-link {
+  align-self: flex-start;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.certification-link:hover {
+  text-decoration: underline;
+}
+
+.certification-link[hidden] {
+  display: none;
+}
+
+.certification-card--empty {
+  grid-column: 1 / -1;
+  justify-items: center;
+  min-height: 160px;
+  text-align: center;
+}
+
+.certification-card--empty img {
+  width: min(420px, 100%);
+  border-radius: var(--radius-sm);
+}
+
+.certification-card--empty h3 {
+  margin-top: 22px;
+}
+
+.certification-card--empty p {
+  max-width: 420px;
+  margin: 8px 0 0;
+  color: var(--muted);
 }
 
 .project-grid {
@@ -557,6 +655,11 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+.project-modal__links[hidden],
+.project-modal__links a[hidden] {
+  display: none;
 }
 
 .project-modal__links a {
@@ -827,6 +930,7 @@ a {
 
   .split-panel,
   .experience-card,
+  .certification-grid,
   .project-grid {
     grid-template-columns: 1fr;
   }
@@ -843,6 +947,16 @@ a {
 
   .project-card p {
     min-height: auto;
+  }
+
+  .certification-card > div {
+    grid-template-rows: auto;
+  }
+
+  .certification-card h3,
+  .certification-card span,
+  .certification-description {
+    min-height: 0;
   }
 }
 
