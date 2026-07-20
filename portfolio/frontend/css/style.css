@@ -401,6 +401,7 @@ a {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--white);
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
 }
 
 .certification-card img {
@@ -408,6 +409,8 @@ a {
   aspect-ratio: 16 / 8.2;
   object-fit: cover;
   filter: grayscale(0.16) contrast(1.04);
+  transform: scale(1);
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), filter 0.24s ease;
 }
 
 .certification-card > div {
@@ -452,9 +455,11 @@ a {
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
+  transition: transform 0.2s ease;
 }
 
 .certification-link:hover {
+  transform: translateX(3px);
   text-decoration: underline;
 }
 
@@ -482,6 +487,33 @@ a {
   max-width: 420px;
   margin: 8px 0 0;
   color: var(--muted);
+}
+
+.certification-card:hover {
+  border-color: rgba(17, 18, 20, 0.32);
+  transform: translateY(-5px);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.08);
+}
+
+.certification-card:hover img {
+  filter: grayscale(0) contrast(1.06);
+  transform: scale(1.035);
+}
+
+.certification-card.reveal-on-scroll:nth-child(2) {
+  transition-delay: 0.08s;
+}
+
+.certification-card.reveal-on-scroll:nth-child(3) {
+  transition-delay: 0.16s;
+}
+
+.certification-card.reveal-on-scroll:nth-child(4) {
+  transition-delay: 0.24s;
+}
+
+.certification-card.reveal-on-scroll.is-visible:hover {
+  transition-delay: 0s;
 }
 
 .project-grid {
@@ -902,6 +934,10 @@ a {
   .reveal-on-scroll {
     opacity: 1;
     transform: none;
+  }
+
+  .certification-card.reveal-on-scroll {
+    transition-delay: 0s;
   }
 }
 
