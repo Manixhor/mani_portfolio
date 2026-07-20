@@ -12,6 +12,25 @@ function setText(selector, value) {
   if (element) element.textContent = value || "";
 }
 
+function plainText(value) {
+  const template = document.createElement("template");
+  template.innerHTML = String(value || "");
+  return (template.content.textContent || "").trim();
+}
+
+function cleanProjectUrl(value) {
+  const url = plainText(value);
+  if (!url || url === "#" || url.toLowerCase() === "null" || url.toLowerCase() === "none") {
+    return "";
+  }
+
+  if (url.startsWith("/") || url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+
+  return "";
+}
+
 function setHtml(selector, value) {
   const element = document.querySelector(selector);
   if (element) element.innerHTML = value || "";
@@ -226,8 +245,8 @@ function renderProjects(projects = {}) {
     trigger.dataset.title = project.name || "";
     trigger.dataset.stack = stack;
     trigger.dataset.brief = project.brief || project.description || "";
-    trigger.dataset.live = project.liveUrl || "#";
-    trigger.dataset.github = project.githubUrl || "#";
+    trigger.dataset.live = cleanProjectUrl(project.liveUrl);
+    trigger.dataset.github = cleanProjectUrl(project.githubUrl);
     trigger.addEventListener("click", () => openProjectModal(trigger));
 
     grid.appendChild(article);
@@ -323,14 +342,28 @@ const modalBrief = document.getElementById("modal-brief");
 const modalStack = document.getElementById("modal-stack");
 const modalLive = document.getElementById("modal-live");
 const modalGithub = document.getElementById("modal-github");
+const modalLinks = projectModal?.querySelector(".project-modal__links");
 
 function setProjectLink(link, url) {
-  if (!link) return;
+  if (!link) return false;
 
-  const isPlaceholder = !url || url === "#";
-  link.href = isPlaceholder ? "#" : url;
+  const cleanUrl = cleanProjectUrl(url);
+  const isPlaceholder = !cleanUrl;
+  link.hidden = isPlaceholder;
   link.classList.toggle("is-placeholder", isPlaceholder);
-  link.setAttribute("aria-disabled", String(isPlaceholder));
+
+  if (isPlaceholder) {
+    link.href = "#";
+    link.removeAttribute("target");
+    link.setAttribute("aria-disabled", "true");
+    return false;
+  }
+
+  link.href = cleanUrl;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.removeAttribute("aria-disabled");
+  return true;
 }
 
 function openProjectModal(trigger) {
@@ -339,8 +372,11 @@ function openProjectModal(trigger) {
   modalTitle.textContent = trigger.dataset.title || "Project";
   modalBrief.textContent = trigger.dataset.brief || "";
   modalStack.textContent = trigger.dataset.stack || "";
-  setProjectLink(modalLive, trigger.dataset.live);
-  setProjectLink(modalGithub, trigger.dataset.github);
+  const hasLiveLink = setProjectLink(modalLive, trigger.dataset.live);
+  const hasGithubLink = setProjectLink(modalGithub, trigger.dataset.github);
+  if (modalLinks) {
+    modalLinks.hidden = !hasLiveLink && !hasGithubLink;
+  }
 
   projectModal.classList.add("is-open");
   projectModal.setAttribute("aria-hidden", "false");

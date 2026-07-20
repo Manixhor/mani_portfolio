@@ -559,6 +559,11 @@ a {
   gap: 12px;
 }
 
+.project-modal__links[hidden],
+.project-modal__links a[hidden] {
+  display: none;
+}
+
 .project-modal__links a {
   display: inline-flex;
   align-items: center;
