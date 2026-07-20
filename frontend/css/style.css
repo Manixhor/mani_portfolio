@@ -406,8 +406,9 @@ a {
 
 .certification-card img {
   width: 100%;
-  aspect-ratio: 16 / 8.2;
-  object-fit: cover;
+  height: clamp(210px, 19vw, 300px);
+  object-fit: contain;
+  background: var(--soft);
   filter: grayscale(0.16) contrast(1.04);
   transform: scale(1);
   transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), filter 0.24s ease;
@@ -497,7 +498,7 @@ a {
 
 .certification-card:hover img {
   filter: grayscale(0) contrast(1.06);
-  transform: scale(1.035);
+  transform: scale(1.02);
 }
 
 .certification-card.reveal-on-scroll:nth-child(2) {
