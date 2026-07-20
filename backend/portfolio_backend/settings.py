@@ -11,6 +11,7 @@ RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default='')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 if not DEBUG:
+    ALLOWED_HOSTS.append('mani-portfolio-dyrf.onrender.com')
     ALLOWED_HOSTS.append('.onrender.com')
 
 INSTALLED_APPS = [
@@ -121,6 +122,7 @@ CSRF_TRUSTED_ORIGINS = config(
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
 if not DEBUG:
+    CSRF_TRUSTED_ORIGINS.append('https://mani-portfolio-dyrf.onrender.com')
     CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
 
 CORS_ALLOW_METHODS = ['GET', 'POST', 'OPTIONS']

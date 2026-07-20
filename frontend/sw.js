@@ -31,6 +31,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  if (request.mode === "navigate" && url.pathname !== "/") {
+    return;
+  }
+
   if (
     url.pathname.startsWith("/admin/") ||
     url.pathname.startsWith("/tinymce/") ||
