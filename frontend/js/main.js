@@ -552,6 +552,31 @@ function registerServiceWorker() {
   });
 }
 
+function setupMobileNav() {
+  const nav = document.querySelector(".top-nav");
+  const toggle = document.querySelector("[data-nav-toggle]");
+  const links = document.querySelector("[data-nav-links]");
+  if (!nav || !toggle || !links) return;
+
+  const closeNav = () => {
+    nav.classList.remove("is-open");
+    toggle.setAttribute("aria-expanded", "false");
+  };
+
+  toggle.addEventListener("click", () => {
+    const isOpen = nav.classList.toggle("is-open");
+    toggle.setAttribute("aria-expanded", String(isOpen));
+  });
+
+  links.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", closeNav);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeNav();
+  });
+}
+
 document.querySelectorAll("[data-close-modal]").forEach((control) => {
   control.addEventListener("click", closeProjectModal);
 });
@@ -586,6 +611,7 @@ window.addEventListener("load", updateProgress);
 registerServiceWorker();
 
 window.addEventListener("DOMContentLoaded", async () => {
+  setupMobileNav();
   setupContactForm();
 
   try {
