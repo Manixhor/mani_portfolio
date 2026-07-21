@@ -16,6 +16,7 @@ const DEFAULT_SOCIAL = {
     label: "LinkedIn",
   },
 };
+const DEFAULT_CERTIFICATION_IMAGE_URL = "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80";
 
 function setText(selector, value) {
   const element = document.querySelector(selector);
@@ -39,6 +40,15 @@ function cleanProjectUrl(value) {
   }
 
   return "";
+}
+
+function setImageWithFallback(image, src, fallbackSrc) {
+  image.onerror = () => {
+    if (image.src !== fallbackSrc) {
+      image.src = fallbackSrc;
+    }
+  };
+  image.src = src || fallbackSrc;
 }
 
 function setPlainText(selector, value) {
@@ -264,7 +274,7 @@ function renderCertifications(certifications = {}) {
       <h3></h3>
       <p></p>
     `;
-    empty.querySelector("img").src = "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80";
+    empty.querySelector("img").src = DEFAULT_CERTIFICATION_IMAGE_URL;
     empty.querySelector("img").alt = "Certification preview";
     empty.querySelector("h3").textContent = "Certifications coming soon";
     empty.querySelector("p").textContent = "New credentials will appear here as they are added.";
@@ -287,7 +297,7 @@ function renderCertifications(certifications = {}) {
     `;
 
     const image = article.querySelector("img");
-    image.src = item.imageUrl || "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80";
+    setImageWithFallback(image, item.imageUrl, DEFAULT_CERTIFICATION_IMAGE_URL);
     image.alt = plainText(item.imageAlt) || `${plainText(item.title) || "Certification"} preview`;
     article.querySelector(".certification-date").textContent = plainText(item.issuedDate);
     article.querySelector("h3").textContent = plainText(item.title);
