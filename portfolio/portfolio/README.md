@@ -8,8 +8,10 @@ Production-ready portfolio with a Django backend for admin-managed content, cont
 - `backend/` - Django API and admin
 - `backend/.env.example` - required production environment variables
 - `backend/Procfile` - Gunicorn start command for platforms such as Render/Heroku-style hosts
-- `requirements.txt` - Northflank buildpack dependency entrypoint
-- `Procfile` - Northflank buildpack start command
+- `requirements.txt` - Render Python dependency entrypoint
+- `build.sh` - Render build command
+- `start.sh` - Render start command
+- `Procfile` - fallback web start command
 
 ## Local Development
 
@@ -70,43 +72,67 @@ gunicorn portfolio_backend.wsgi:application
 - `POST /api/analytics/track/`
 - `GET /admin/`
 
-## Northflank Deployment Without Docker
+## Render Deployment
 
-Use one Northflank combined service for this project.
+Use one Render web service for the portfolio and one Render PostgreSQL database.
 
-Build settings:
+### Option 1: Blueprint
+
+The repository includes `render.yaml` at the repo root. In Render:
+
+1. Go to `Blueprints`.
+2. Click `New Blueprint Instance`.
+3. Connect this GitHub repository.
+4. Render will create the web service and PostgreSQL database.
+5. When Render asks for `DJANGO_SUPERUSER_PASSWORD`, enter `portfolio1234`.
+
+The blueprint includes a persistent disk for uploaded admin images. Render disks require a paid web service.
+
+### Option 2: Manual Web Service
+
+If you deploy manually:
 
 ```text
-Build type: Buildpack
-Build context: /portfolio
-Port: 8000
-Protocol: HTTP
-Public: enabled
-Health check path: /healthz/
+Root Directory: portfolio
+Runtime: Python 3
+Build Command: ./build.sh
+Start Command: ./start.sh
+Health Check Path: /healthz/
 ```
 
-Runtime command is already in `Procfile`:
+`start.sh` runs:
 
 ```bash
-cd backend && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn portfolio_backend.wsgi:application --bind 0.0.0.0:$PORT
+cd backend
+python manage.py migrate --noinput
+python manage.py ensure_superuser
+gunicorn portfolio_backend.wsgi:application --bind 0.0.0.0:$PORT
 ```
 
-Required Northflank variables:
+Required Render variables:
 
 ```env
 DEBUG=False
 SECRET_KEY=replace-with-a-long-random-secret
-ALLOWED_HOSTS=your-service.code.run,your-custom-domain.com
-CORS_ALLOWED_ORIGINS=https://your-service.code.run,https://your-custom-domain.com
-CSRF_TRUSTED_ORIGINS=https://your-service.code.run,https://your-custom-domain.com
 DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DB_NAME
-PUBLIC_BACKEND_URL=https://your-service.code.run
+DJANGO_SUPERUSER_USERNAME=mani
+DJANGO_SUPERUSER_EMAIL=manigururam06@gmail.com
+DJANGO_SUPERUSER_PASSWORD=portfolio1234
 SECURE_SSL_REDIRECT=True
 SESSION_COOKIE_SECURE=True
 CSRF_COOKIE_SECURE=True
 SECURE_HSTS_SECONDS=31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS=True
 SECURE_HSTS_PRELOAD=True
+```
+
+Render automatically provides `RENDER_EXTERNAL_HOSTNAME`; the app uses it for `ALLOWED_HOSTS`, CSRF trusted origin, CORS origin, and uploaded image URLs. If you add a custom domain, also set:
+
+```env
+ALLOWED_HOSTS=your-custom-domain.com
+CORS_ALLOWED_ORIGINS=https://your-custom-domain.com
+CSRF_TRUSTED_ORIGINS=https://your-custom-domain.com
+PUBLIC_BACKEND_URL=https://your-custom-domain.com
 ```
 
 Contact form email variables:
@@ -124,10 +150,10 @@ CONTACT_NOTIFICATION_EMAIL=your-email@gmail.com
 
 Admin image uploads:
 
-Add a persistent volume mounted at:
+Add a persistent disk mounted at:
 
 ```text
-/app/backend/media
+/opt/render/project/src/backend/media
 ```
 
-Without a persistent volume, uploaded images can be removed when the container is redeployed.
+Without a persistent disk, uploaded images can be removed when the service redeploys or restarts.

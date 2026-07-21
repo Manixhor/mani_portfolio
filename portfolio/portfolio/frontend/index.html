@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Portfolio website." />
   <meta name="theme-color" content="#ffffff" />
+  <meta name="application-name" content="Mani Portfolio" />
+  <meta name="apple-mobile-web-app-title" content="Mani Portfolio" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="robots" content="index, follow" />
   <meta property="og:title" content="Portfolio" />
   <meta property="og:description" content="Portfolio website." />
@@ -16,6 +20,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Great+Vibes&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/static/icons/icon.svg" />
   <link rel="stylesheet" href="/static/css/style.css?v=3" />
 </head>
 <body>
@@ -27,8 +34,8 @@
         <a href="#hero">Home</a>
         <a href="#about">About</a>
         <a href="#experience">Experience</a>
-        <a href="#certifications">Certifications</a>
         <a href="#projects">Projects</a>
+        <a href="#certifications">Certifications</a>
         <a href="#skills">Skills</a>
         <a href="#contact">Contact</a>
       </div>
@@ -72,20 +79,20 @@
       <div class="skills-grid" aria-label="Technical skills" data-render="skills"></div>
     </section>
 
-    <section id="certifications" class="certifications-panel section-panel">
-      <div class="section-heading">
-        <p class="section-kicker" data-content="certifications-label"></p>
-        <h2 data-content="certifications-heading"></h2>
-      </div>
-      <div class="certification-grid" data-render="certifications"></div>
-    </section>
-
     <section id="projects" class="projects-panel section-panel">
       <div class="section-heading">
         <p class="section-kicker" data-content="projects-label"></p>
         <h2 data-content="projects-heading"></h2>
       </div>
       <div class="project-grid" data-render="projects"></div>
+    </section>
+
+    <section id="certifications" class="certifications-panel section-panel">
+      <div class="section-heading">
+        <p class="section-kicker" data-content="certifications-label"></p>
+        <h2 data-content="certifications-heading"></h2>
+      </div>
+      <div class="certification-grid" data-render="certifications"></div>
     </section>
 
     <section id="contact" class="contact-panel section-panel split-panel">
