@@ -7,12 +7,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production')
 DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
-RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default='')
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-if not DEBUG:
-    ALLOWED_HOSTS.append('mani-portfolio-dyrf.onrender.com')
-    ALLOWED_HOSTS.append('.onrender.com')
 
 INSTALLED_APPS = [
     # Admin interface (must be before admin)
@@ -109,21 +103,12 @@ CORS_ALLOWED_ORIGINS = config(
     default='http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000',
     cast=Csv(),
 )
-if RENDER_EXTERNAL_HOSTNAME:
-    CORS_ALLOWED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
-if not DEBUG:
-    CORS_ALLOWED_ORIGIN_REGEXES = [r'^https://.*\.onrender\.com$']
 
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
     default='http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000',
     cast=Csv(),
 )
-if RENDER_EXTERNAL_HOSTNAME:
-    CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
-if not DEBUG:
-    CSRF_TRUSTED_ORIGINS.append('https://mani-portfolio-dyrf.onrender.com')
-    CSRF_TRUSTED_ORIGINS.append('https://*.onrender.com')
 
 CORS_ALLOW_METHODS = ['GET', 'POST', 'OPTIONS']
 
@@ -164,7 +149,7 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '120/min',
         'user': '600/min',
-        'contact': '30/min',
+        'contact': '5/min',
         'analytics': '60/min',
     },
 }
@@ -194,5 +179,4 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER or 'portfolio@example.com')
 CONTACT_NOTIFICATION_EMAIL = config('CONTACT_NOTIFICATION_EMAIL', default='')
-DEFAULT_PUBLIC_BACKEND_URL = f'https://{RENDER_EXTERNAL_HOSTNAME}' if RENDER_EXTERNAL_HOSTNAME else 'http://127.0.0.1:8000'
-PUBLIC_BACKEND_URL = config('PUBLIC_BACKEND_URL', default=DEFAULT_PUBLIC_BACKEND_URL).rstrip('/')
+PUBLIC_BACKEND_URL = config('PUBLIC_BACKEND_URL', default='http://127.0.0.1:8000').rstrip('/')

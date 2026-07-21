@@ -11,8 +11,8 @@ DEFAULT_HERO = {
     "resumeLabel": "Download resume",
     "resumeUrl": "#",
     "social": {
-        "github": {"url": "https://github.com/Manixhor", "label": "GitHub"},
-        "linkedin": {"url": "https://www.linkedin.com/in/manikanta-gururam/", "label": "LinkedIn"},
+        "github": {"url": "https://github.com/Mani", "label": "GitHub"},
+        "linkedin": {"url": "https://linkedin.com/in/Mani", "label": "LinkedIn"},
         "email": {"url": "mailto:manigururam06@gmail.com", "label": "Email"},
     },
 }
