@@ -73,6 +73,9 @@ class CertificationItem(models.Model):
     issued_date = models.CharField(max_length=120, blank=True)
     credential_url = models.URLField(blank=True)
     description = models.TextField(blank=True)
+    image = models.ImageField(upload_to='portfolio/certifications/', blank=True, null=True)
+    image_url = models.URLField(blank=True)
+    image_alt = models.CharField(max_length=180, blank=True)
     order = models.PositiveIntegerField(default=0)
     is_visible = models.BooleanField(default=True)
 

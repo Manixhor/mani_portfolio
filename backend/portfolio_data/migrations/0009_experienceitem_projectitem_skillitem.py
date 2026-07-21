@@ -3,6 +3,9 @@
 from django.db import migrations, models
 
 
+RESTAURANT_IMAGE_URL = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80'
+
+
 def copy_json_items_to_models(apps, _schema_editor):
     PortfolioConfig = apps.get_model('portfolio_data', 'PortfolioConfig')
     ExperienceItem = apps.get_model('portfolio_data', 'ExperienceItem')
@@ -74,7 +77,7 @@ def copy_json_items_to_models(apps, _schema_editor):
             show_live_url=True,
             github_url='',
             show_github_url=False,
-            image_url='',
+            image_url=RESTAURANT_IMAGE_URL,
             image_alt='Restaurant Reservation System preview',
             order=5,
         )

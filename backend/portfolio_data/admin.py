@@ -498,6 +498,10 @@ class CertificationItemAdmin(admin.ModelAdmin):
         ('Credential', {
             'fields': ['credential_url'],
         }),
+        ('Image', {
+            'fields': ['image', 'image_url', 'image_alt'],
+            'description': 'Uploaded image is used first. Image URL is only a fallback.',
+        }),
         ('Display', {
             'fields': ['order', 'is_visible'],
         }),

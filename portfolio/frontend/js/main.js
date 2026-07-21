@@ -226,9 +226,12 @@ function renderCertifications(certifications = {}) {
     const empty = document.createElement("article");
     empty.className = "certification-card certification-card--empty";
     empty.innerHTML = `
+      <img loading="lazy" referrerpolicy="no-referrer" />
       <h3></h3>
       <p></p>
     `;
+    empty.querySelector("img").src = "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80";
+    empty.querySelector("img").alt = "Certification preview";
     empty.querySelector("h3").textContent = "Certifications coming soon";
     empty.querySelector("p").textContent = "New credentials will appear here as they are added.";
     grid.appendChild(empty);
@@ -239,13 +242,19 @@ function renderCertifications(certifications = {}) {
     const article = document.createElement("article");
     article.className = "certification-card";
     article.innerHTML = `
-      <p class="certification-date"></p>
-      <h3></h3>
-      <span></span>
-      <p class="certification-description"></p>
-      <a class="certification-link" target="_blank" rel="noopener noreferrer">View Credential</a>
+      <img loading="lazy" referrerpolicy="no-referrer" />
+      <div>
+        <p class="certification-date"></p>
+        <h3></h3>
+        <span></span>
+        <p class="certification-description"></p>
+        <a class="certification-link" target="_blank" rel="noopener noreferrer">View Credential</a>
+      </div>
     `;
 
+    const image = article.querySelector("img");
+    image.src = item.imageUrl || "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80";
+    image.alt = plainText(item.imageAlt) || `${plainText(item.title) || "Certification"} preview`;
     article.querySelector(".certification-date").textContent = plainText(item.issuedDate);
     article.querySelector("h3").textContent = plainText(item.title);
     article.querySelector("span").textContent = plainText(item.issuer);

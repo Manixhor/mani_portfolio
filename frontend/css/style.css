@@ -394,17 +394,34 @@ a {
 }
 
 .certification-card {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto 1fr;
   min-height: 220px;
-  padding: 24px;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: var(--white);
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+.certification-card img {
+  width: 100%;
+  height: clamp(210px, 19vw, 300px);
+  object-fit: contain;
+  background: var(--white);
+  filter: grayscale(0.16) contrast(1.04);
+  transform: scale(1);
+  transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1), filter 0.24s ease;
+}
+
+.certification-card > div {
+  display: grid;
+  grid-template-rows: auto minmax(3.3em, auto) minmax(1.2em, auto) minmax(6.1em, 1fr) auto;
+  padding: 22px 24px 24px;
 }
 
 .certification-date {
-  margin: 0 0 18px;
+  margin: 0 0 16px;
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 800;
@@ -413,33 +430,37 @@ a {
 
 .certification-card h3 {
   margin: 0 0 8px;
+  min-height: 3.3em;
   font-size: clamp(1.18rem, 2.4vw, 1.55rem);
   line-height: 1.08;
   font-weight: 900;
 }
 
 .certification-card span {
+  min-height: 1.2em;
   color: var(--muted);
   font-size: 0.92rem;
   font-weight: 700;
 }
 
 .certification-description {
-  margin: 16px 0 22px;
+  margin: 18px 0 22px;
+  min-height: 6.1em;
   color: var(--ink);
   font-size: 0.94rem;
   line-height: 1.45;
 }
 
 .certification-link {
-  margin-top: auto;
   align-self: flex-start;
   font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
+  transition: transform 0.2s ease;
 }
 
 .certification-link:hover {
+  transform: translateX(3px);
   text-decoration: underline;
 }
 
@@ -449,16 +470,51 @@ a {
 
 .certification-card--empty {
   grid-column: 1 / -1;
-  align-items: center;
-  justify-content: center;
+  justify-items: center;
   min-height: 160px;
   text-align: center;
+}
+
+.certification-card--empty img {
+  width: min(420px, 100%);
+  border-radius: var(--radius-sm);
+}
+
+.certification-card--empty h3 {
+  margin-top: 22px;
 }
 
 .certification-card--empty p {
   max-width: 420px;
   margin: 8px 0 0;
   color: var(--muted);
+}
+
+.certification-card:hover {
+  border-color: rgba(17, 18, 20, 0.32);
+  transform: translateY(-5px);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.08);
+}
+
+.certification-card:hover img {
+  filter: grayscale(0) contrast(1.06);
+  transform: scale(1.02);
+}
+
+.certification-card.reveal-on-scroll:nth-child(2) {
+  transition-delay: 0.08s;
+}
+
+.certification-card.reveal-on-scroll:nth-child(3) {
+  transition-delay: 0.16s;
+}
+
+.certification-card.reveal-on-scroll:nth-child(4) {
+  transition-delay: 0.24s;
+}
+
+.certification-card.reveal-on-scroll.is-visible:hover {
+  transition-delay: 0s;
 }
 
 .project-grid {
@@ -880,35 +936,73 @@ a {
     opacity: 1;
     transform: none;
   }
+
+  .certification-card.reveal-on-scroll {
+    transition-delay: 0s;
+  }
 }
 
 @media (max-width: 900px) {
   :root {
-    --header-offset: 118px;
+    --header-offset: 74px;
   }
 
   .top-nav {
+    position: sticky;
     min-height: auto;
-    padding: 22px 24px;
-    gap: 18px;
+    padding: 10px 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-radius: 0;
+    box-shadow: 0 1px 0 rgba(17, 18, 20, 0.08);
+    scrollbar-width: none;
+  }
+
+  .top-nav::-webkit-scrollbar {
+    display: none;
   }
 
   .nav-links {
-    flex-wrap: wrap;
-    gap: 14px 24px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 8px;
+    width: max-content;
+    min-width: 100%;
   }
 
   .top-nav .nav-links a {
-    font-size: 0.73rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--ink);
+    font-size: 0.72rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .top-nav .nav-links a::after {
+    display: none;
   }
 
   .hero-panel {
-    padding: 22px 14px 32px;
+    padding: 18px 12px 32px;
   }
 
   .hero-card {
-    min-height: 455px;
-    padding: 66px 20px 44px;
+    min-height: min(560px, calc(100svh - var(--header-offset)));
+    padding: clamp(48px, 12vw, 68px) 16px 44px;
+  }
+
+  .hero-card h1 {
+    max-width: 100%;
+    font-size: clamp(3.6rem, 15.5vw, 7rem);
+    line-height: 0.82;
+    overflow-wrap: anywhere;
   }
 
   .split-panel,
@@ -931,11 +1025,21 @@ a {
   .project-card p {
     min-height: auto;
   }
+
+  .certification-card > div {
+    grid-template-rows: auto;
+  }
+
+  .certification-card h3,
+  .certification-card span,
+  .certification-description {
+    min-height: 0;
+  }
 }
 
 @media (max-width: 560px) {
   :root {
-    --header-offset: 132px;
+    --header-offset: 58px;
   }
 
   .portfolio-shell {
@@ -944,29 +1048,34 @@ a {
   }
 
   .top-nav {
-    align-items: flex-start;
+    padding: 9px 10px;
   }
 
-  .nav-links {
-    justify-content: flex-start;
+  .top-nav .nav-links a {
+    min-height: 34px;
+    padding: 0 11px;
+    font-size: 0.68rem;
   }
 
   .hero-card {
-    min-height: 420px;
+    min-height: min(550px, calc(100svh - var(--header-offset)));
+    padding: 46px 14px 42px;
   }
 
   .hero-card h1 {
-    font-size: clamp(3.3rem, 17vw, 4.4rem);
+    font-size: clamp(3rem, 15vw, 4.25rem);
   }
 
   .signature {
-    margin-top: 2px;
-    font-size: clamp(3rem, 16vw, 4.2rem);
+    margin-top: 0;
+    font-size: clamp(2.85rem, 14vw, 4rem);
   }
 
   .hero-role {
-    max-width: 250px;
+    max-width: 310px;
     margin-bottom: 30px;
+    font-size: 1rem;
+    line-height: 1.28;
   }
 
   .section-copy {

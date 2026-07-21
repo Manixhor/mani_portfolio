@@ -4,6 +4,9 @@ from django.conf import settings
 from .models import CertificationItem, ExperienceItem, PortfolioConfig, ProjectItem, SkillItem
 
 
+DEFAULT_CERTIFICATION_IMAGE_URL = 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80'
+
+
 class PortfolioConfigSerializer(serializers.ModelSerializer):
     experience = serializers.SerializerMethodField()
     skills = serializers.SerializerMethodField()
@@ -57,10 +60,18 @@ class PortfolioConfigSerializer(serializers.ModelSerializer):
                     'issuedDate': item.issued_date,
                     'credentialUrl': item.credential_url,
                     'description': item.description,
+                    'imageUrl': self.certification_image_url(item),
+                    'imageAlt': item.image_alt or f'{item.title} certificate preview',
                 }
                 for item in items
             ]
         return certifications
+
+    @staticmethod
+    def certification_image_url(item):
+        if item.image:
+            return f'{settings.PUBLIC_BACKEND_URL}{item.image.url}'
+        return item.image_url or DEFAULT_CERTIFICATION_IMAGE_URL
 
     def get_projects(self, obj):
         projects = dict(obj.projects or {})
