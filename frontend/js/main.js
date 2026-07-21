@@ -154,7 +154,13 @@ async function loadPortfolioConfig() {
 }
 
 function renderHero(hero = {}) {
-  setPlainText('[data-content="hero-eyebrow"]', hero.eyebrow);
+  const eyebrow = document.querySelector('[data-content="hero-eyebrow"]');
+  if (eyebrow) {
+    const eyebrowText = plainText(hero.eyebrow);
+    eyebrow.textContent = eyebrowText;
+    eyebrow.hidden = !eyebrowText;
+  }
+
   setPlainText('[data-content="hero-title"]', hero.title);
   setPlainText('[data-content="hero-name"]', hero.name);
   setPlainText('[data-content="hero-tagline"]', hero.tagline);
