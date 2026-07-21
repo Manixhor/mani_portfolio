@@ -425,6 +425,19 @@ a {
   padding: 22px 24px 24px;
 }
 
+.certification-card img {
+  width: 100%;
+  aspect-ratio: 16 / 8.2;
+  object-fit: cover;
+  filter: grayscale(0.16) contrast(1.04);
+}
+
+.certification-card > div {
+  display: grid;
+  grid-template-rows: auto minmax(3.3em, auto) minmax(1.2em, auto) minmax(6.1em, 1fr) auto;
+  padding: 22px 24px 24px;
+}
+
 .certification-date {
   margin: 0 0 16px;
   color: var(--muted);
