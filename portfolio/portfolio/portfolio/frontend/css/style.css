@@ -166,6 +166,13 @@ a {
 
 .hero-card .year-pill {
   animation-delay: 0.58s;
+  min-width: clamp(9.8rem, 18vw, 12.4rem);
+  min-height: 4.7rem;
+  padding: 0 2.8rem;
+  border-width: 2px;
+  font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+  letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .eyebrow {
@@ -1050,6 +1057,13 @@ a {
   .hero-role {
     max-width: 250px;
     margin-bottom: 30px;
+  }
+
+  .hero-card .year-pill {
+    min-width: min(12rem, 72vw);
+    min-height: 4.5rem;
+    padding: 0 2.35rem;
+    border-radius: 999px;
   }
 
   .section-copy {
