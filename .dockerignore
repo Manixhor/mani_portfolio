@@ -1,0 +1,12 @@
+.DS_Store
+.env
+.venv
+venv
+env
+__pycache__
+*.pyc
+backend/db.sqlite3
+backend/media
+backend/staticfiles
+node_modules
+portfolio
