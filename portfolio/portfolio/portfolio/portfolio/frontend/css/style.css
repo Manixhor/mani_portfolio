@@ -1004,10 +1004,11 @@ a {
   }
 
   .hero-card .year-pill {
-    min-width: min(12rem, 72vw);
-    min-height: 4.5rem;
-    padding: 0 2.35rem;
+    min-width: 8.3rem;
+    min-height: 3.25rem;
+    padding: 0 1.7rem;
     border-radius: 999px;
+    font-size: 1.08rem;
   }
 
   .section-copy {
