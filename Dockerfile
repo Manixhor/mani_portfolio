@@ -16,7 +16,9 @@ COPY backend /app/backend
 COPY frontend /app/frontend
 COPY start.sh /app/start.sh
 
-RUN chmod +x /app/start.sh
+RUN chmod +x /app/start.sh \
+    && cd /app/backend \
+    && python manage.py collectstatic --noinput
 
 EXPOSE 8000
 

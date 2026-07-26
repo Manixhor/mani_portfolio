@@ -102,9 +102,11 @@ STORAGES = {
         'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage' if CLOUDINARY_URL else 'django.core.files.storage.FileSystemStorage',
     },
     'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
     },
 }
+DEFAULT_FILE_STORAGE = STORAGES['default']['BACKEND']
+STATICFILES_STORAGE = STORAGES['staticfiles']['BACKEND']
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
