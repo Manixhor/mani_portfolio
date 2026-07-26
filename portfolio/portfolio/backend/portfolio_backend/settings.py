@@ -37,7 +37,6 @@ INSTALLED_APPS = [
 ]
 
 if CLOUDINARY_URL:
-    INSTALLED_APPS.insert(INSTALLED_APPS.index('django.contrib.staticfiles'), 'cloudinary_storage')
     INSTALLED_APPS.append('cloudinary')
 
 MIDDLEWARE = [
