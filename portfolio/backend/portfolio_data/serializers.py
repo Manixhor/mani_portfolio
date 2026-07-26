@@ -67,10 +67,15 @@ class PortfolioConfigSerializer(serializers.ModelSerializer):
             ]
         return certifications
 
-    @staticmethod
-    def certification_image_url(item):
+    def absolute_file_url(self, file_field):
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(file_field.url)
+        return f'{settings.PUBLIC_BACKEND_URL}{file_field.url}'
+
+    def certification_image_url(self, item):
         if item.image:
-            return f'{settings.PUBLIC_BACKEND_URL}{item.image.url}'
+            return self.absolute_file_url(item.image)
         return item.image_url or DEFAULT_CERTIFICATION_IMAGE_URL
 
     def get_projects(self, obj):
@@ -92,8 +97,7 @@ class PortfolioConfigSerializer(serializers.ModelSerializer):
             ]
         return projects
 
-    @staticmethod
-    def project_image_url(item):
+    def project_image_url(self, item):
         if item.image:
-            return f'{settings.PUBLIC_BACKEND_URL}{item.image.url}'
+            return self.absolute_file_url(item.image)
         return item.image_url

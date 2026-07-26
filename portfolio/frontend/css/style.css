@@ -1155,9 +1155,8 @@ a {
   }
 
   .signature {
-    margin-top: clamp(-1.35rem, -5vw, -0.8rem);
-    margin-bottom: 18px;
-    font-size: clamp(3rem, 15vw, 4.25rem);
+    margin-top: 0;
+    font-size: clamp(2.85rem, 14vw, 4rem);
   }
 
   .hero-role {

@@ -6,6 +6,16 @@ const API_BASE = window.PORTFOLIO_API_BASE || (
 );
 const progressBar = document.getElementById("progress-bar");
 const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+const DEFAULT_SOCIAL = {
+  github: {
+    url: "https://github.com/Manixhor",
+    label: "GitHub",
+  },
+  linkedin: {
+    url: "https://www.linkedin.com/in/manikanta-gururam/",
+    label: "LinkedIn",
+  },
+};
 
 function setText(selector, value) {
   const element = document.querySelector(selector);
@@ -29,6 +39,28 @@ function cleanProjectUrl(value) {
   }
 
   return "";
+}
+
+function setPlainText(selector, value) {
+  setText(selector, plainText(value));
+}
+
+function setSectionTitle(labelSelector, headingSelector, label, heading) {
+  const cleanLabel = plainText(label);
+  const cleanHeading = plainText(heading);
+  const isDuplicate = cleanLabel.toLowerCase() === cleanHeading.toLowerCase();
+  setText(labelSelector, isDuplicate ? "" : cleanLabel);
+  setText(headingSelector, cleanHeading);
+}
+
+function splitBulletText(value) {
+  const text = plainText(value).replace(/\s+/g, " ");
+  if (!text) return [];
+
+  const sentences = text.match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) || [text];
+  return sentences
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
 }
 
 function setHtml(selector, value) {
@@ -75,7 +107,7 @@ function normalizeStack(project) {
 function skillLogo(skillName, icon) {
   if (icon) return icon;
 
-  const normalized = (skillName || "").toLowerCase().replace(/\s+/g, "");
+  const normalized = plainText(skillName).toLowerCase().replace(/\s+/g, "");
   const logos = {
     python: "devicon-python-plain",
     django: "devicon-django-plain",
@@ -112,10 +144,10 @@ async function loadPortfolioConfig() {
 }
 
 function renderHero(hero = {}) {
-  setText('[data-content="hero-title"]', hero.title);
-  setText('[data-content="hero-name"]', hero.name);
-  setText('[data-content="hero-tagline"]', hero.tagline);
-  setText('[data-content="hero-year"]', hero.year);
+  setPlainText('[data-content="hero-title"]', hero.title);
+  setPlainText('[data-content="hero-name"]', hero.name);
+  setPlainText('[data-content="hero-tagline"]', hero.tagline);
+  setPlainText('[data-content="hero-year"]', hero.year);
 
   if (hero.name) {
     document.title = `${hero.name} | Portfolio`;
@@ -135,8 +167,7 @@ function renderHero(hero = {}) {
 }
 
 function renderAbout(about = {}) {
-  setText('[data-content="about-label"]', about.sectionLabel);
-  setText('[data-content="about-heading"]', about.heading);
+  setSectionTitle('[data-content="about-label"]', '[data-content="about-heading"]', about.sectionLabel, about.heading);
 
   const paragraphs = document.querySelector('[data-render="about-paragraphs"]');
   if (paragraphs) {
@@ -151,8 +182,7 @@ function renderAbout(about = {}) {
 }
 
 function renderExperience(experience = {}) {
-  setText('[data-content="experience-label"]', experience.sectionLabel);
-  setText('[data-content="experience-heading"]', experience.heading);
+  setSectionTitle('[data-content="experience-label"]', '[data-content="experience-heading"]', experience.sectionLabel, experience.heading);
 
   const container = document.querySelector('[data-render="experience"]');
   if (!container) return;
@@ -170,12 +200,12 @@ function renderExperience(experience = {}) {
       <ul></ul>
     `;
 
-    article.querySelector(".experience-period").textContent = item.period || "";
-    article.querySelector("h3").textContent = item.role || "";
-    article.querySelector("span").textContent = item.company || "";
+    article.querySelector(".experience-period").textContent = plainText(item.period);
+    article.querySelector("h3").textContent = plainText(item.role);
+    article.querySelector("span").textContent = plainText(item.company);
 
     const list = article.querySelector("ul");
-    (item.points || []).forEach((point) => {
+    (item.points || []).flatMap(splitBulletText).forEach((point) => {
       const li = document.createElement("li");
       li.textContent = point;
       list.appendChild(li);
@@ -186,15 +216,15 @@ function renderExperience(experience = {}) {
 }
 
 function renderSkills(skills = {}) {
-  setText('[data-content="skills-label"]', skills.sectionLabel);
-  setText('[data-content="skills-heading"]', skills.heading);
+  setSectionTitle('[data-content="skills-label"]', '[data-content="skills-heading"]', skills.sectionLabel, skills.heading);
 
   const grid = document.querySelector('[data-render="skills"]');
   if (!grid) return;
 
   grid.innerHTML = "";
   (skills.items || []).forEach((skill) => {
-    const logo = skillLogo(skill.name, skill.icon);
+    const skillName = plainText(skill.name);
+    const logo = skillLogo(skillName, skill.icon);
     const item = document.createElement("div");
     item.className = "skill-item";
 
@@ -206,14 +236,18 @@ function renderSkills(skills = {}) {
       item.querySelector("i").className = logo;
     }
 
-    item.querySelector("span").textContent = skill.name || "";
+    item.querySelector("span").textContent = skillName;
     grid.appendChild(item);
   });
 }
 
 function renderCertifications(certifications = {}) {
-  setText('[data-content="certifications-label"]', certifications.sectionLabel || "Certifications");
-  setText('[data-content="certifications-heading"]', certifications.heading || "Certifications");
+  setSectionTitle(
+    '[data-content="certifications-label"]',
+    '[data-content="certifications-heading"]',
+    certifications.sectionLabel || "Certifications",
+    certifications.heading || "Certifications"
+  );
 
   const grid = document.querySelector('[data-render="certifications"]');
   if (!grid) return;
@@ -272,8 +306,7 @@ function renderCertifications(certifications = {}) {
 }
 
 function renderProjects(projects = {}) {
-  setText('[data-content="projects-label"]', projects.sectionLabel);
-  setText('[data-content="projects-heading"]', projects.heading);
+  setSectionTitle('[data-content="projects-label"]', '[data-content="projects-heading"]', projects.sectionLabel, projects.heading);
 
   const grid = document.querySelector('[data-render="projects"]');
   if (!grid) return;
@@ -295,15 +328,15 @@ function renderProjects(projects = {}) {
 
     const image = article.querySelector("img");
     image.src = project.imageUrl || "";
-    image.alt = project.imageAlt || `${project.name || "Project"} preview`;
-    article.querySelector("h3").textContent = project.name || "";
-    article.querySelector("p").textContent = project.description || "";
-    article.querySelector("span").textContent = stack;
+    image.alt = plainText(project.imageAlt) || `${plainText(project.name) || "Project"} preview`;
+    article.querySelector("h3").textContent = plainText(project.name);
+    article.querySelector("p").textContent = plainText(project.description);
+    article.querySelector("span").textContent = plainText(stack);
 
     const trigger = article.querySelector(".project-trigger");
-    trigger.dataset.title = project.name || "";
-    trigger.dataset.stack = stack;
-    trigger.dataset.brief = project.brief || project.description || "";
+    trigger.dataset.title = plainText(project.name);
+    trigger.dataset.stack = plainText(stack);
+    trigger.dataset.brief = plainText(project.brief || project.description);
     trigger.dataset.live = cleanProjectUrl(project.liveUrl);
     trigger.dataset.github = cleanProjectUrl(project.githubUrl);
     trigger.addEventListener("click", () => openProjectModal(trigger));
@@ -313,8 +346,7 @@ function renderProjects(projects = {}) {
 }
 
 function renderContact(contact = {}, hero = {}) {
-  setText('[data-content="contact-label"]', contact.sectionLabel);
-  setText('[data-content="contact-heading"]', contact.heading);
+  setSectionTitle('[data-content="contact-label"]', '[data-content="contact-heading"]', contact.sectionLabel, contact.heading);
   setHtml('[data-render="contact-copy"]', richTextHtml(contact.subtitle));
 
   const list = document.querySelector('[data-render="contact-list"]');
@@ -328,12 +360,12 @@ function renderContact(contact = {}, hero = {}) {
       if (!value) return;
       const li = document.createElement("li");
       li.innerHTML = `<span aria-hidden="true">${icon}</span> `;
-      li.append(document.createTextNode(value));
+      li.append(document.createTextNode(plainText(value)));
       list.appendChild(li);
     });
   }
 
-  const social = hero.social || {};
+  const social = { ...DEFAULT_SOCIAL, ...(hero.social || {}) };
   const socialLinks = document.querySelector('[data-render="social-links"]');
   if (socialLinks) {
     socialLinks.innerHTML = "";
@@ -359,7 +391,7 @@ function renderContact(contact = {}, hero = {}) {
     image.alt = contact.imageAlt || "Developer workspace";
   }
 
-  setText('[data-content="contact-quote"]', contact.quote || "");
+  setPlainText('[data-content="contact-quote"]', contact.quote);
 }
 
 function renderPortfolio(config) {
@@ -483,17 +515,39 @@ function setupContactForm() {
       });
 
       if (!response.ok) {
-        throw new Error("Message could not be sent.");
+        let detail = "";
+        try {
+          const data = await response.json();
+          detail = data.detail || Object.values(data).flat().join(" ");
+        } catch (_error) {
+          detail = "";
+        }
+
+        if (response.status === 429) {
+          throw new Error("Too many tries. Please wait a minute and send again.");
+        }
+
+        throw new Error(detail || "Message could not be sent.");
       }
 
       form.reset();
       setContactStatus("Message sent. I will get back to you soon.", "success");
     } catch (error) {
       console.error(error);
-      setContactStatus("Message failed. Please email me directly.", "error");
+      setContactStatus(error.message || "Message failed. Please email me directly.", "error");
     } finally {
       submitButton.disabled = false;
     }
+  });
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((error) => {
+      console.error("Service worker registration failed.", error);
+    });
   });
 }
 
@@ -528,6 +582,7 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
 
 window.addEventListener("scroll", updateProgress, { passive: true });
 window.addEventListener("load", updateProgress);
+registerServiceWorker();
 
 window.addEventListener("DOMContentLoaded", async () => {
   setupContactForm();

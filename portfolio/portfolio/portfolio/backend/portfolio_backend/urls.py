@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.http import JsonResponse
+from django.http import FileResponse, JsonResponse
 from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
@@ -15,8 +15,24 @@ def health_view(_request):
     return JsonResponse({'status': 'ok'})
 
 
+def manifest_view(_request):
+    return FileResponse(
+        open(settings.BASE_DIR.parent / 'frontend' / 'manifest.webmanifest', 'rb'),
+        content_type='application/manifest+json',
+    )
+
+
+def service_worker_view(_request):
+    return FileResponse(
+        open(settings.BASE_DIR.parent / 'frontend' / 'sw.js', 'rb'),
+        content_type='text/javascript',
+    )
+
+
 urlpatterns = [
     path('', TemplateView.as_view(template_name='index.html'), name='home'),
+    path('manifest.webmanifest', manifest_view, name='web-manifest'),
+    path('sw.js', service_worker_view, name='service-worker'),
     path('healthz/', health_view, name='healthz'),
     path('admin/', admin.site.urls),
     path('tinymce/', include('tinymce.urls')),
