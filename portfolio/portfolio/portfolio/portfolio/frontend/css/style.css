@@ -1019,11 +1019,11 @@ a {
   }
 
   .hero-card .year-pill {
-    min-width: 8.3rem;
-    min-height: 3.25rem;
-    padding: 0 1.7rem;
+    min-width: 9.15rem;
+    min-height: 4.55rem;
+    padding: 0 2.05rem;
     border-radius: 999px;
-    font-size: 1.08rem;
+    font-size: 1.24rem;
   }
 
   .section-copy {
