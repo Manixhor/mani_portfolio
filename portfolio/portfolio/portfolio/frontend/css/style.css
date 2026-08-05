@@ -430,7 +430,8 @@ a {
 .certification-card img {
   width: 100%;
   aspect-ratio: 16 / 8.2;
-  object-fit: cover;
+  object-fit: contain;
+  background: var(--white);
   filter: grayscale(0.16) contrast(1.04);
 }
 
@@ -1027,6 +1028,12 @@ a {
 
   .certification-card > div {
     grid-template-rows: auto;
+  }
+
+  .certification-card img {
+    height: auto;
+    aspect-ratio: auto;
+    object-fit: contain;
   }
 
   .certification-card h3,
