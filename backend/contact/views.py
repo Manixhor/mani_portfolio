@@ -75,21 +75,7 @@ class ContactCreateView(generics.CreateAPIView):
     throttle_scope = 'contact'
 
     def perform_create(self, serializer):
-        message = serializer.save()
-        recipients = get_notification_recipients()
-        if not recipients:
-            return
-
-        subject = f"Portfolio contact: {message.subject}"
-        body = (
-            f"Name: {message.name}\n"
-            f"Email: {message.email}\n"
-            f"Subject: {message.subject}\n\n"
-            f"{message.message}\n\n"
-            "This message was submitted from your portfolio contact form."
-        )
-        for to_email in recipients:
-            send_via_relay(subject, body, to_email)
+        serializer.save()
 
 
 class ContactListView(generics.ListAPIView):
