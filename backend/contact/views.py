@@ -18,11 +18,18 @@ GMAIL_RELAY_URL = getattr(settings, 'GMAIL_RELAY_URL', '')
 
 
 def get_notification_recipients():
+    config = PortfolioConfig.objects.filter(pk=1).first()
+    if config and config.notification_emails:
+        return [
+            email.strip()
+            for email in config.notification_emails.split(',')
+            if email.strip()
+        ]
+
     configured_email = getattr(settings, 'CONTACT_NOTIFICATION_EMAIL', '')
     if configured_email:
         return [configured_email]
 
-    config = PortfolioConfig.objects.filter(pk=1).first()
     contact_email = ((config.contact or {}).get('email') if config else '') or ''
     if contact_email:
         return [contact_email]

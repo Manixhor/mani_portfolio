@@ -184,6 +184,12 @@ class PortfolioConfigForm(forms.ModelForm):
     contact_image_url = forms.URLField(label='Contact Image URL', required=False)
     contact_image_alt = forms.CharField(label='Contact Image Alt Text', required=False)
     contact_quote = forms.CharField(label='Contact Quote', widget=forms.Textarea(attrs={'rows': 3}), required=False)
+    notification_emails = forms.CharField(
+        label='Notification Emails',
+        widget=forms.Textarea(attrs={'rows': 3}),
+        required=False,
+        help_text='Comma-separated email addresses to receive contact form notifications.',
+    )
 
     class Meta:
         model = PortfolioConfig
@@ -298,6 +304,7 @@ class PortfolioConfigForm(forms.ModelForm):
         self.fields['contact_image_url'].initial = contact.get('imageUrl', '')
         self.fields['contact_image_alt'].initial = contact.get('imageAlt', '')
         self.fields['contact_quote'].initial = contact.get('quote', '')
+        self.fields['notification_emails'].initial = self.instance.notification_emails or ''
         for field_name in ['hero', 'about', 'experience', 'skills', 'projects', 'contact', 'footer']:
             value = getattr(self.instance, field_name, None)
             if value:
@@ -610,6 +617,7 @@ class PortfolioConfigAdmin(admin.ModelAdmin):
                 'contact_image_url',
                 'contact_image_alt',
                 'contact_quote',
+                'notification_emails',
             ],
         }),
         ('Metadata', {'fields': ['updated_at']}),

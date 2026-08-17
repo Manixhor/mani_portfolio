@@ -8,6 +8,11 @@ class PortfolioConfig(models.Model):
     skills = models.JSONField(default=dict)
     projects = models.JSONField(default=dict)
     contact = models.JSONField(default=dict)
+    notification_emails = models.TextField(
+        blank=True,
+        default='',
+        help_text='Comma-separated email addresses to receive contact form notifications.',
+    )
     footer = models.JSONField(default=dict)
     about_image = models.ImageField(upload_to='portfolio/about/', blank=True, null=True)
     contact_image = models.ImageField(upload_to='portfolio/contact/', blank=True, null=True)
