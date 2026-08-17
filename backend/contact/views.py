@@ -2,6 +2,8 @@ import logging
 
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, permissions
 from .models import ContactMessage
 from .serializers import ContactMessageSerializer
@@ -24,6 +26,7 @@ def get_notification_recipients():
     return []
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ContactCreateView(generics.CreateAPIView):
     queryset = ContactMessage.objects.all()
     serializer_class = ContactMessageSerializer
