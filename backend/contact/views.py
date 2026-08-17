@@ -53,7 +53,7 @@ class ContactCreateView(generics.CreateAPIView):
                 message=body,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=recipients,
-                fail_silently=True,
+                fail_silently=False,
             )
         except Exception:
             logger.exception("Contact message email notification failed.")
