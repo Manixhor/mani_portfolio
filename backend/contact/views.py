@@ -1,6 +1,7 @@
 import json
 import logging
 import urllib.request
+import urllib.error
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -54,9 +55,13 @@ def send_via_relay(subject, body, to_email):
             headers={'Content-Type': 'application/json'},
             method='POST',
         )
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        opener = urllib.request.build_opener(urllib.request.HTTPRedirectHandler)
+        with opener.open(req, timeout=15) as resp:
             result = json.loads(resp.read())
             return result.get('success', False)
+    except urllib.error.HTTPError as e:
+        logger.exception("Gmail relay HTTP %s.", e.code)
+        return False
     except Exception:
         logger.exception("Gmail relay failed.")
         return False
