@@ -189,7 +189,7 @@ REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
 # Contact form email notifications. In local development this prints emails to
 # the runserver terminal unless SMTP settings are provided.
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST', default='')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
