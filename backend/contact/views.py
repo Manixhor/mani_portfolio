@@ -1,4 +1,6 @@
+import json
 import logging
+import urllib.request
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -12,6 +14,8 @@ from portfolio_data.models import PortfolioConfig
 
 logger = logging.getLogger(__name__)
 
+GMAIL_RELAY_URL = getattr(settings, 'GMAIL_RELAY_URL', '')
+
 
 def get_notification_recipients():
     configured_email = getattr(settings, 'CONTACT_NOTIFICATION_EMAIL', '')
@@ -24,6 +28,31 @@ def get_notification_recipients():
         return [contact_email]
 
     return []
+
+
+def send_via_relay(subject, body, to_email):
+    if not GMAIL_RELAY_URL:
+        return False
+    try:
+        payload = json.dumps({
+            'to': to_email,
+            'subject': subject,
+            'body': body,
+            'from': 'manigururam08@gmail.com',
+            'name': 'Portfolio',
+        }).encode('utf-8')
+        req = urllib.request.Request(
+            GMAIL_RELAY_URL,
+            data=payload,
+            headers={'Content-Type': 'application/json'},
+            method='POST',
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            result = json.loads(resp.read())
+            return result.get('success', False)
+    except Exception:
+        logger.exception("Gmail relay failed.")
+        return False
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -47,16 +76,8 @@ class ContactCreateView(generics.CreateAPIView):
             f"{message.message}\n\n"
             "This message was submitted from your portfolio contact form."
         )
-        try:
-            send_mail(
-                subject=subject,
-                message=body,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=recipients,
-                fail_silently=True,
-            )
-        except Exception:
-            logger.exception("Contact message email notification failed.")
+        for to_email in recipients:
+            send_via_relay(subject, body, to_email)
 
 
 class ContactListView(generics.ListAPIView):
