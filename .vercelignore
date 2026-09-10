@@ -1,0 +1,10 @@
+.DS_Store
+.env
+.git
+.pytest_cache
+venv
+.venv
+env
+node_modules
+backend/db.sqlite3
+backend/media

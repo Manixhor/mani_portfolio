@@ -157,3 +157,24 @@ Add a persistent disk mounted at:
 ```
 
 Without a persistent disk, uploaded images can be removed when the service redeploys or restarts.
+
+## Vercel Ruby Deployment
+
+The repository includes a Ruby Vercel Function at `api/index.rb`. It serves the existing frontend and exposes the same API paths used by the browser:
+
+- `/api/portfolio/config/`
+- `/api/contact/submit/`
+- `/healthz/`
+
+In Vercel, import the repository with the project root set to `/`. Vercel will detect `Gemfile` and the Ruby runtime. Add these Production environment variables:
+
+```text
+DATABASE_URL=your Neon PostgreSQL connection string
+CLOUDINARY_URL=cloudinary://key:secret@cloud-name
+CORS_ALLOWED_ORIGINS=https://your-project.vercel.app
+PUBLIC_BACKEND_URL=https://your-project.vercel.app
+```
+
+Keep `DATABASE_URL` private. Cloudinary is only needed when portfolio image fields contain uploaded media; for direct Cloudinary URLs, store the URL in the portfolio data. The Ruby function is stateless, so Neon remains the database and Cloudinary remains the media store.
+
+The original Django backend is retained for local admin/migrations and Railway compatibility. Vercel uses the Ruby function through `vercel.json`.

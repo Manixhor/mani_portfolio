@@ -8,6 +8,11 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 DEBUG = config('DEBUG', default=True, cast=bool)
 CLOUDINARY_URL = config('CLOUDINARY_URL', default='')
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+VERCEL_URL = config('VERCEL_URL', default='')
+if VERCEL_URL:
+    ALLOWED_HOSTS.append(VERCEL_URL)
+if not DEBUG:
+    ALLOWED_HOSTS.append('.vercel.app')
 
 INSTALLED_APPS = [
     # Admin interface (must be before admin)
@@ -84,7 +89,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static', BASE_DIR.parent / 'frontend']
 MEDIA_URL = '/media/'
@@ -109,12 +114,16 @@ CORS_ALLOWED_ORIGINS = config(
     default='http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000',
     cast=Csv(),
 )
+if not DEBUG:
+    CORS_ALLOWED_ORIGIN_REGEXES = [r'^https://.*\.vercel\.app$']
 
 CSRF_TRUSTED_ORIGINS = config(
     'CSRF_TRUSTED_ORIGINS',
     default='http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000',
     cast=Csv(),
 )
+if not DEBUG:
+    CSRF_TRUSTED_ORIGINS.append('https://*.vercel.app')
 
 CORS_ALLOW_METHODS = ['GET', 'POST', 'OPTIONS']
 
