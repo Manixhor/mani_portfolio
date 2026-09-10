@@ -629,6 +629,232 @@ a {
   text-decoration: underline;
 }
 
+.blogs-hero {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: clamp(54px, 9vw, 112px) clamp(24px, 7vw, 84px) clamp(32px, 5vw, 60px);
+}
+
+.blogs-kicker {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.blogs-hero h1 {
+  margin: 0;
+  font-size: clamp(3.5rem, 9vw, 7.5rem);
+  line-height: 0.82;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.blogs-hero > div > p:last-child {
+  max-width: 490px;
+  margin: 22px 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.add-blog-button {
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--white);
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.add-blog-button:hover {
+  transform: rotate(90deg);
+  background: var(--white);
+  color: var(--ink);
+}
+
+.blogs-section {
+  padding: 0 clamp(24px, 7vw, 84px) 76px;
+}
+
+.blog-status {
+  min-height: 1.25rem;
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.blog-status.is-error,
+.blog-form__status {
+  color: #a31919;
+}
+
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.blog-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+}
+
+.blog-card img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.blog-card > div {
+  padding: 22px;
+}
+
+.blog-card h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.12;
+}
+
+.blog-card__subheader {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.blog-card__description {
+  margin: 16px 0 0;
+  font-size: 0.94rem;
+  line-height: 1.52;
+}
+
+.blog-empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.blog-dialog {
+  width: min(620px, calc(100% - 32px));
+  max-height: min(90vh, 760px);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+}
+
+.blog-dialog::backdrop {
+  background: rgba(17, 18, 20, 0.42);
+  backdrop-filter: blur(4px);
+}
+
+.blog-form {
+  display: grid;
+  gap: 16px;
+  padding: clamp(24px, 5vw, 42px);
+}
+
+.blog-dialog__heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 8px;
+}
+
+.blog-dialog h2 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.blog-dialog__close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.blog-form label {
+  display: grid;
+  gap: 7px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.blog-form input,
+.blog-form textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 11px 12px;
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.95rem;
+  text-transform: none;
+}
+
+.blog-form textarea {
+  resize: vertical;
+}
+
+.blog-form input:focus,
+.blog-form textarea:focus {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+.blog-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.blog-publish-button {
+  min-height: 38px;
+  padding: 0 22px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--white);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.blog-form__status {
+  min-height: 1.2rem;
+  margin: 0;
+  font-size: 0.86rem;
+}
+
 .project-modal {
   position: fixed;
   inset: 0;
@@ -1136,6 +1362,15 @@ a {
   .project-card h3,
   .project-card span {
     min-height: 0;
+  }
+
+  .blogs-hero {
+    align-items: start;
+    padding: 48px 24px 30px;
+  }
+
+  .blog-grid {
+    grid-template-columns: 1fr;
   }
 
   .certification-card > div {

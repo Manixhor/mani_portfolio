@@ -15,9 +15,14 @@ class LocalRequest
   attr_reader :path, :request_method, :body
 
   def initialize(request)
+    @request = request
     @path = request.path
     @request_method = request.request_method
     @body = request.body
+  end
+
+  def header(name)
+    @request.header[name.downcase]
   end
 end
 

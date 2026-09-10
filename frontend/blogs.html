@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Notes and writing from Mani." />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Blogs | Mani</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Great+Vibes&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css?v=8" />
+</head>
+<body class="blog-page">
+  <main class="portfolio-shell">
+    <nav class="top-nav" aria-label="Primary navigation">
+      <a class="nav-brand" href="/" aria-label="Go to home">Mani</a>
+      <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="primary-nav" data-nav-toggle>
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-links" id="primary-nav" data-nav-links>
+        <a href="/#hero">Home</a>
+        <a href="/#about">About</a>
+        <a href="/#experience">Experience</a>
+        <a href="/#projects">Projects</a>
+        <a href="/#certifications">Certifications</a>
+        <a href="/#skills">Skills</a>
+        <a href="/blogs/" aria-current="page">Blogs</a>
+        <a href="/#contact">Contact</a>
+      </div>
+    </nav>
+
+    <section class="blogs-hero">
+      <div>
+        <p class="blogs-kicker">Notes from Mani</p>
+        <h1>Blogs</h1>
+        <p>Things I am learning, building, and figuring out along the way.</p>
+      </div>
+      <button class="add-blog-button" type="button" data-open-blog-form aria-label="Add blog post" title="Add blog post">+</button>
+    </section>
+
+    <section class="blogs-section" aria-live="polite">
+      <p class="blog-status" data-blog-status></p>
+      <div class="blog-grid" data-blog-grid></div>
+    </section>
+  </main>
+
+  <dialog class="blog-dialog" data-blog-dialog aria-labelledby="blog-dialog-title">
+    <form class="blog-form" data-blog-form>
+      <div class="blog-dialog__heading">
+        <div>
+          <p class="blogs-kicker">New post</p>
+          <h2 id="blog-dialog-title">Add blog</h2>
+        </div>
+        <button class="blog-dialog__close" type="button" data-close-blog-form aria-label="Close">&times;</button>
+      </div>
+      <label>Image URL<input name="imageUrl" type="url" placeholder="https://..." /></label>
+      <label>Header<input name="header" type="text" required maxlength="180" /></label>
+      <label>Subheader<input name="subheader" type="text" maxlength="240" /></label>
+      <label>Description<textarea name="description" rows="7" required></textarea></label>
+      <label>Admin password<input name="password" type="password" required autocomplete="current-password" /></label>
+      <div class="blog-form__actions">
+        <button class="outline-button" type="button" data-close-blog-form>Cancel</button>
+        <button class="blog-publish-button" type="submit">Publish</button>
+      </div>
+      <p class="blog-form__status" data-blog-form-status aria-live="polite"></p>
+    </form>
+  </dialog>
+
+  <script src="/blogs.js?v=1"></script>
+</body>
+</html>

@@ -18,22 +18,29 @@ def json_response(response, payload, status = 200)
   response.status = status
   response["Content-Type"] = "application/json; charset=utf-8"
   response["Access-Control-Allow-Origin"] = ENV.fetch("CORS_ALLOWED_ORIGINS", "*").split(",").first.strip
-  response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+  response["Access-Control-Allow-Headers"] = "Content-Type, Accept, X-Blog-Admin-Password"
   response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
   response.body = JSON.generate(payload)
 end
 
 def database
   raise "DATABASE_URL is not configured" unless ENV["DATABASE_URL"] && !ENV["DATABASE_URL"].empty?
-  @database = nil if @database && @database.status != PG::CONNECTION_OK
-  @database ||= PG.connect(ENV["DATABASE_URL"])
+
+  connection = Thread.current[:portfolio_database]
+  if connection && connection.status != PG::CONNECTION_OK
+    connection.close rescue nil
+    Thread.current[:portfolio_database] = nil
+  end
+
+  Thread.current[:portfolio_database] ||= PG.connect(ENV["DATABASE_URL"])
 end
 
 def with_database_retry
   yield
 rescue PG::ConnectionBad
-  @database&.close
-  @database = nil
+  connection = Thread.current[:portfolio_database]
+  connection.close rescue nil
+  Thread.current[:portfolio_database] = nil
   yield
 end
 
@@ -163,6 +170,73 @@ def submit_contact(request)
   [{ "detail" => "Message sent." }, 201]
 end
 
+def ensure_blog_table
+  return if @blog_table_ready
+
+  database.exec(<<~SQL)
+    CREATE TABLE IF NOT EXISTS portfolio_blogpost (
+      id BIGSERIAL PRIMARY KEY,
+      image_url TEXT NOT NULL DEFAULT '',
+      header VARCHAR(180) NOT NULL,
+      subheader VARCHAR(240) NOT NULL DEFAULT '',
+      description TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  SQL
+  @blog_table_ready = true
+end
+
+def blog_posts
+  ensure_blog_table
+  database.exec(<<~SQL).map do |post|
+    SELECT id, image_url, header, subheader, description, created_at
+    FROM portfolio_blogpost
+    ORDER BY created_at DESC, id DESC
+  SQL
+    {
+      "id" => post["id"].to_i,
+      "imageUrl" => post["image_url"].to_s,
+      "header" => post["header"].to_s,
+      "subheader" => post["subheader"].to_s,
+      "description" => post["description"].to_s,
+      "createdAt" => post["created_at"].to_s
+    }
+  end
+end
+
+def create_blog_post(request)
+  expected_password = ENV["BLOG_ADMIN_PASSWORD"].to_s
+  supplied_password = request.header("x-blog-admin-password")&.first.to_s
+  return [{ "detail" => "Blog publishing is not configured." }, 503] if expected_password.empty?
+  return [{ "detail" => "Incorrect blog admin password." }, 401] unless supplied_password == expected_password
+
+  payload = request_body(request)
+  header = payload["header"].to_s.strip
+  subheader = payload["subheader"].to_s.strip
+  description = payload["description"].to_s.strip
+  image_url = payload["imageUrl"].to_s.strip
+  return [{ "detail" => "Header and description are required." }, 400] if header.empty? || description.empty?
+
+  ensure_blog_table
+  post = database.exec_params(
+    <<~SQL,
+      INSERT INTO portfolio_blogpost (image_url, header, subheader, description)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, image_url, header, subheader, description, created_at
+    SQL
+    [image_url, header, subheader, description]
+  ).first
+
+  [{
+    "id" => post["id"].to_i,
+    "imageUrl" => post["image_url"].to_s,
+    "header" => post["header"].to_s,
+    "subheader" => post["subheader"].to_s,
+    "description" => post["description"].to_s,
+    "createdAt" => post["created_at"].to_s
+  }, 201]
+end
+
 def send_file(response, path, content_type)
   return json_response(response, { "detail" => "Not found" }, 404) unless File.file?(path)
   response.status = 200
@@ -193,7 +267,7 @@ Handler = proc do |request, response|
   if request.request_method == "OPTIONS"
     response.status = 204
     response["Access-Control-Allow-Origin"] = "*"
-    response["Access-Control-Allow-Headers"] = "Content-Type, Accept"
+    response["Access-Control-Allow-Headers"] = "Content-Type, Accept, X-Blog-Admin-Password"
     response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     response.body = ""
   elsif path == "/healthz/" || path == "/healthz"
@@ -203,12 +277,25 @@ Handler = proc do |request, response|
   elsif path == "/api/contact/submit/" || path == "/api/contact/submit"
     payload, status = with_database_retry { submit_contact(request) }
     json_response(response, payload, status)
+  elsif path == "/blog-data/" || path == "/blog-data"
+    if request.request_method == "GET"
+      json_response(response, with_database_retry { { "items" => blog_posts } })
+    elsif request.request_method == "POST"
+      payload, status = with_database_retry { create_blog_post(request) }
+      json_response(response, payload, status)
+    else
+      json_response(response, { "detail" => "Method not allowed." }, 405)
+    end
   elsif path == "/" || path.empty?
     static_file(response, File.join(FRONTEND, "index.html"))
+  elsif path == "/blogs/" || path == "/blogs"
+    static_file(response, File.join(FRONTEND, "blogs.html"))
   elsif path == "/sw.js"
     static_file(response, File.join(FRONTEND, "sw.js"))
   elsif path == "/app.js"
     static_file(response, File.join(FRONTEND, "js", "main.js"))
+  elsif path == "/blogs.js"
+    static_file(response, File.join(FRONTEND, "js", "blogs.js"))
   elsif path == "/manifest.webmanifest"
     static_file(response, File.join(FRONTEND, "manifest.webmanifest"))
   elsif path.start_with?("/static/css/", "/static/js/", "/static/icons/", "/css/", "/js/", "/icons/")

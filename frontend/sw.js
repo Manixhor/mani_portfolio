@@ -1,7 +1,7 @@
-const CACHE_NAME = "mani-portfolio-v10";
+const CACHE_NAME = "mani-portfolio-v11";
 const APP_SHELL = [
   "/",
-  "/static/css/style.css?v=7",
+  "/static/css/style.css?v=8",
   "/app.js?v=2",
   "/manifest.webmanifest",
   "/static/icons/icon.svg"
@@ -46,7 +46,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/portfolio-data")) {
+  if (
+    url.pathname.startsWith("/api/") ||
+    url.pathname.startsWith("/portfolio-data") ||
+    url.pathname.startsWith("/blog-data")
+  ) {
     event.respondWith(fetch(request));
     return;
   }
