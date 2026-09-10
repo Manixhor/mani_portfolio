@@ -100,7 +100,7 @@ function skillLogo(skillName, icon) {
 }
 
 async function loadPortfolioConfig() {
-  const response = await fetch(`${API_BASE}/portfolio/config/`, {
+  const response = await fetch(`${window.location.origin}/portfolio-data/`, {
     headers: { Accept: "application/json" },
   });
 
