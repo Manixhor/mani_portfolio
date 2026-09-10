@@ -6,6 +6,7 @@ venv
 .venv
 env
 node_modules
+vendor
 backend/db.sqlite3
 backend/media
 backend

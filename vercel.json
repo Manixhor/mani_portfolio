@@ -3,7 +3,7 @@
   "functions": {
     "api/index.rb": {
       "maxDuration": 10,
-      "excludeFiles": "{backend/**,portfolio/**,node_modules/**,.git/**,.vercel/**,venv/**,.venv/**,env/**,**/__pycache__/**,**/*.pyc,**/*.py}"
+      "excludeFiles": "{backend/**,portfolio/**,node_modules/**,vendor/**,.git/**,.vercel/**,venv/**,.venv/**,env/**,**/__pycache__/**,**/*.pyc,**/*.py}"
     }
   },
   "rewrites": [
