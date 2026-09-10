@@ -178,3 +178,11 @@ PUBLIC_BACKEND_URL=https://your-project.vercel.app
 Keep `DATABASE_URL` private. Cloudinary is only needed when portfolio image fields contain uploaded media; for direct Cloudinary URLs, store the URL in the portfolio data. The Ruby function is stateless, so Neon remains the database and Cloudinary remains the media store.
 
 The original Django backend is retained for local admin/migrations and Railway compatibility. Vercel uses the Ruby function through `vercel.json`.
+
+For local Ruby development, run:
+
+```bash
+bundle exec ruby dev.rb
+```
+
+Then open `http://localhost:3000`. `vercel dev` currently cannot emulate the Ruby runtime locally, so `dev.rb` provides the local WEBrick adapter for the same Ruby handler.
