@@ -2,7 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/index.rb": {
-      "maxDuration": 10
+      "maxDuration": 10,
+      "excludeFiles": "{backend/**,portfolio/**,node_modules/**,.git/**,.vercel/**,venv/**,.venv/**,env/**,**/__pycache__/**,**/*.pyc,**/*.py}"
     }
   },
   "rewrites": [
