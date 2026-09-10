@@ -1,5 +1,7 @@
 .DS_Store
 .env
+.env.local
+.vercel/
 *.pyc
 __pycache__/
 .pytest_cache/
@@ -12,3 +14,4 @@ venv/
 .venv/
 env/
 node_modules/
+.vercel
