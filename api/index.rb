@@ -25,7 +25,16 @@ end
 
 def database
   raise "DATABASE_URL is not configured" unless ENV["DATABASE_URL"] && !ENV["DATABASE_URL"].empty?
+  @database = nil if @database && @database.status != PG::CONNECTION_OK
   @database ||= PG.connect(ENV["DATABASE_URL"])
+end
+
+def with_database_retry
+  yield
+rescue PG::ConnectionBad
+  @database&.close
+  @database = nil
+  yield
 end
 
 def json_value(value, fallback = {})
@@ -189,10 +198,10 @@ Handler = proc do |request, response|
     response.body = ""
   elsif path == "/healthz/" || path == "/healthz"
     json_response(response, { "status" => "ok" })
-  elsif path == "/api/portfolio/config/" || path == "/api/portfolio/config"
-    json_response(response, portfolio_config)
+  elsif ["/api/portfolio/config/", "/api/portfolio/config", "/portfolio-data/", "/portfolio-data"].include?(path)
+    json_response(response, with_database_retry { portfolio_config })
   elsif path == "/api/contact/submit/" || path == "/api/contact/submit"
-    payload, status = submit_contact(request)
+    payload, status = with_database_retry { submit_contact(request) }
     json_response(response, payload, status)
   elsif path == "/" || path.empty?
     static_file(response, File.join(FRONTEND, "index.html"))
