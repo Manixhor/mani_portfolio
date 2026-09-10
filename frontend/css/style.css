@@ -584,21 +584,19 @@ a {
 }
 
 .project-card div {
-  display: grid;
-  grid-template-rows: minmax(2.75em, auto) minmax(7.2em, auto) minmax(3.3em, auto) auto;
+  display: flex;
+  flex-direction: column;
   padding: 15px 16px 17px;
 }
 
 .project-card h3 {
   margin: 0 0 4px;
-  min-height: 2.75em;
   font-size: 1.08rem;
   font-weight: 800;
   line-height: 1.26;
 }
 
 .project-card p {
-  min-height: 7.2em;
   margin: 0 0 12px;
   color: var(--ink);
   font-size: 0.9rem;
@@ -607,7 +605,6 @@ a {
 
 .project-card span {
   display: block;
-  min-height: 3.3em;
   margin-bottom: 13px;
   font-size: 0.75rem;
   font-weight: 500;
@@ -616,7 +613,7 @@ a {
 
 .project-card a,
 .project-trigger {
-  margin-top: auto;
+  margin-top: 0;
   align-self: flex-start;
   padding: 0;
   border: 0;

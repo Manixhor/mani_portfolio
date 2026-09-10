@@ -207,6 +207,8 @@ Handler = proc do |request, response|
     static_file(response, File.join(FRONTEND, "index.html"))
   elsif path == "/sw.js"
     static_file(response, File.join(FRONTEND, "sw.js"))
+  elsif path == "/app.js"
+    static_file(response, File.join(FRONTEND, "js", "main.js"))
   elsif path == "/manifest.webmanifest"
     static_file(response, File.join(FRONTEND, "manifest.webmanifest"))
   elsif path.start_with?("/static/css/", "/static/js/", "/static/icons/", "/css/", "/js/", "/icons/")

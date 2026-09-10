@@ -142,7 +142,8 @@ function skillLogo(skillName, icon) {
 }
 
 async function loadPortfolioConfig() {
-  const response = await fetch(`${window.location.origin}/portfolio-data/`, {
+  const response = await fetch(`${window.location.origin}/portfolio-data/?_=${Date.now()}`, {
+    cache: "no-store",
     headers: { Accept: "application/json" },
   });
 
@@ -339,6 +340,9 @@ function renderProjects(projects = {}) {
     const image = article.querySelector("img");
     image.src = project.imageUrl || "";
     image.alt = plainText(project.imageAlt) || `${plainText(project.name) || "Project"} preview`;
+    image.addEventListener("error", () => {
+      image.hidden = true;
+    });
     article.querySelector("h3").textContent = plainText(project.name);
     article.querySelector("p").textContent = plainText(project.description);
     article.querySelector("span").textContent = plainText(stack);
@@ -555,7 +559,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=6").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=10").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
@@ -619,7 +623,7 @@ window.addEventListener("scroll", updateProgress, { passive: true });
 window.addEventListener("load", updateProgress);
 registerServiceWorker();
 
-window.addEventListener("DOMContentLoaded", async () => {
+async function initializePortfolio() {
   setupMobileNav();
   setupContactForm();
 
@@ -631,4 +635,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     document.body.classList.add("config-error");
     console.error(error);
   }
-});
+}
+
+if (document.readyState === "loading") {
+  window.addEventListener("DOMContentLoaded", initializePortfolio, { once: true });
+} else {
+  initializePortfolio();
+}
