@@ -200,8 +200,8 @@ Handler = proc do |request, response|
     static_file(response, File.join(FRONTEND, "sw.js"))
   elsif path == "/manifest.webmanifest"
     static_file(response, File.join(FRONTEND, "manifest.webmanifest"))
-  elsif path.start_with?("/css/", "/js/", "/icons/")
-    relative = path.sub(%r{^/}, "")
+  elsif path.start_with?("/static/css/", "/static/js/", "/static/icons/", "/css/", "/js/", "/icons/")
+    relative = path.sub(%r{^/static/}, "").sub(%r{^/}, "")
     static_file(response, File.join(FRONTEND, relative))
   else
     json_response(response, { "detail" => "Not found" }, 404)
