@@ -417,7 +417,6 @@ function renderPortfolio(config) {
   renderAbout(config.about || {});
   renderExperience(config.experience || {});
   renderSkills(config.skills || {});
-  renderCertifications(config.certifications || {});
   renderProjects(config.projects || {});
   renderContact(config.contact || {}, config.hero || {});
 }
@@ -426,7 +425,7 @@ function setupRevealAnimations() {
   if (motionQuery.matches) return;
 
   const revealItems = document.querySelectorAll(
-    ".split-panel, .experience-card, .skills-grid, .certification-card, .project-card, .contact-panel"
+    ".split-panel, .experience-card, .skills-grid, .project-card, .contact-panel"
   );
 
   revealItems.forEach((item) => item.classList.add("reveal-on-scroll"));
@@ -563,7 +562,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=15").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=16").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
