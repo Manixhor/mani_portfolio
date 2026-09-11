@@ -328,8 +328,11 @@ function renderProjects(projects = {}) {
     const article = document.createElement("article");
     article.className = "project-card";
     article.innerHTML = `
-      <img loading="lazy" referrerpolicy="no-referrer" />
-      <div>
+      <div class="project-media">
+        <img loading="lazy" referrerpolicy="no-referrer" />
+        <span class="project-media-fallback" aria-hidden="true">Preview unavailable</span>
+      </div>
+      <div class="project-card-content">
         <h3></h3>
         <p></p>
         <span></span>
@@ -337,15 +340,16 @@ function renderProjects(projects = {}) {
       </div>
     `;
 
+    const media = article.querySelector(".project-media");
     const image = article.querySelector("img");
     image.src = project.imageUrl || "";
     image.alt = plainText(project.imageAlt) || `${plainText(project.name) || "Project"} preview`;
     image.addEventListener("error", () => {
-      image.hidden = true;
+      media.classList.add("is-unavailable");
     });
     article.querySelector("h3").textContent = plainText(project.name);
     article.querySelector("p").textContent = plainText(project.description);
-    article.querySelector("span").textContent = plainText(stack);
+    article.querySelector(".project-card-content span").textContent = plainText(stack);
 
     const trigger = article.querySelector(".project-trigger");
     trigger.dataset.title = plainText(project.name);
@@ -559,7 +563,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=11").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=13").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
