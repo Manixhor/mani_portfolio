@@ -240,11 +240,21 @@ end
 
 def blog_admin_error(request)
   expected_password = ENV["BLOG_ADMIN_PASSWORD"].to_s
-  supplied_password = request.header("x-blog-admin-password")&.first.to_s
+  supplied_password = request_header(request, "x-blog-admin-password")
   return [{ "detail" => "Blog publishing is not configured." }, 503] if expected_password.empty?
   return [{ "detail" => "Incorrect blog admin password." }, 401] unless supplied_password == expected_password
 
   nil
+end
+
+def request_header(request, name)
+  header_method = request.method(:header)
+  value = if header_method.arity.zero?
+    request.header[name.downcase]
+  else
+    request.header(name.downcase)
+  end
+  Array(value).first.to_s
 end
 
 def cloudinary_credentials
