@@ -5,6 +5,8 @@ const blogForm = document.querySelector("[data-blog-form]");
 const nav = document.querySelector(".top-nav");
 const navToggle = document.querySelector("[data-nav-toggle]");
 const navLinks = document.querySelector("[data-nav-links]");
+const adminMode = new URLSearchParams(window.location.search).get("admin") === "1";
+const maxImageBytes = 3 * 1024 * 1024;
 
 function setStatus(message, isError = false) {
   if (!blogStatus) return;
@@ -62,26 +64,58 @@ function closeDialog() {
   if (blogDialog?.open) blogDialog.close();
 }
 
-document.querySelector("[data-open-blog-form]")?.addEventListener("click", () => blogDialog?.showModal());
+const addBlogButton = document.querySelector("[data-open-blog-form]");
+if (adminMode && addBlogButton) addBlogButton.hidden = false;
+addBlogButton?.addEventListener("click", () => blogDialog?.showModal());
 document.querySelectorAll("[data-close-blog-form]").forEach((button) => button.addEventListener("click", closeDialog));
+
+function fileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(String(reader.result).split(",", 2)[1] || ""));
+    reader.addEventListener("error", () => reject(new Error("Image could not be read.")));
+    reader.readAsDataURL(file);
+  });
+}
 
 blogForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const formData = new FormData(blogForm);
   const publishButton = blogForm.querySelector('button[type="submit"]');
   const formStatus = document.querySelector("[data-blog-form-status]");
+  const image = formData.get("image");
+  const password = formData.get("password");
   publishButton.disabled = true;
-  formStatus.textContent = "Publishing...";
+  formStatus.textContent = "";
 
   try {
+    if (!(image instanceof File) || !image.size) throw new Error("Choose an image for the post.");
+    if (image.size > maxImageBytes) throw new Error("Image must be 3 MB or smaller.");
+
+    formStatus.textContent = "Uploading image...";
+    const uploadResponse = await fetch("/blog-upload/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Blog-Admin-Password": password,
+      },
+      body: JSON.stringify({
+        contentType: image.type,
+        fileData: await fileAsBase64(image),
+      }),
+    });
+    const uploadData = await uploadResponse.json();
+    if (!uploadResponse.ok) throw new Error(uploadData.detail || "Image could not be uploaded.");
+
+    formStatus.textContent = "Publishing post...";
     const response = await fetch("/blog-data/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Blog-Admin-Password": formData.get("password"),
+        "X-Blog-Admin-Password": password,
       },
       body: JSON.stringify({
-        imageUrl: formData.get("imageUrl"),
+        imageUrl: uploadData.imageUrl,
         header: formData.get("header"),
         subheader: formData.get("subheader"),
         description: formData.get("description"),

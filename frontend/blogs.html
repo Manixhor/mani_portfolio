@@ -35,7 +35,7 @@
         <h1>Blogs</h1>
         <p>Things I am learning, building, and figuring out along the way.</p>
       </div>
-      <button class="add-blog-button" type="button" data-open-blog-form aria-label="Add blog post" title="Add blog post">+</button>
+      <button class="add-blog-button" type="button" data-open-blog-form hidden aria-label="Add blog post" title="Add blog post">+</button>
     </section>
 
     <section class="blogs-section" aria-live="polite">
@@ -53,7 +53,7 @@
         </div>
         <button class="blog-dialog__close" type="button" data-close-blog-form aria-label="Close">&times;</button>
       </div>
-      <label>Image URL<input name="imageUrl" type="url" placeholder="https://..." /></label>
+      <label>Image<input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required /></label>
       <label>Header<input name="header" type="text" required maxlength="180" /></label>
       <label>Subheader<input name="subheader" type="text" maxlength="240" /></label>
       <label>Description<textarea name="description" rows="7" required></textarea></label>
@@ -66,6 +66,6 @@
     </form>
   </dialog>
 
-  <script src="/blogs.js?v=1"></script>
+  <script src="/blogs.js?v=2"></script>
 </body>
 </html>

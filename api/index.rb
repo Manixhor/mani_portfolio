@@ -1,5 +1,8 @@
 require "json"
+require "base64"
+require "digest/sha1"
 require "net/http"
+require "securerandom"
 require "time"
 require "uri"
 
@@ -205,10 +208,8 @@ def blog_posts
 end
 
 def create_blog_post(request)
-  expected_password = ENV["BLOG_ADMIN_PASSWORD"].to_s
-  supplied_password = request.header("x-blog-admin-password")&.first.to_s
-  return [{ "detail" => "Blog publishing is not configured." }, 503] if expected_password.empty?
-  return [{ "detail" => "Incorrect blog admin password." }, 401] unless supplied_password == expected_password
+  authorization_error = blog_admin_error(request)
+  return authorization_error if authorization_error
 
   payload = request_body(request)
   header = payload["header"].to_s.strip
@@ -235,6 +236,64 @@ def create_blog_post(request)
     "description" => post["description"].to_s,
     "createdAt" => post["created_at"].to_s
   }, 201]
+end
+
+def blog_admin_error(request)
+  expected_password = ENV["BLOG_ADMIN_PASSWORD"].to_s
+  supplied_password = request.header("x-blog-admin-password")&.first.to_s
+  return [{ "detail" => "Blog publishing is not configured." }, 503] if expected_password.empty?
+  return [{ "detail" => "Incorrect blog admin password." }, 401] unless supplied_password == expected_password
+
+  nil
+end
+
+def cloudinary_credentials
+  config = URI.parse(ENV.fetch("CLOUDINARY_URL", ""))
+  return nil unless config.scheme == "cloudinary" && config.host && config.user && config.password
+
+  [config.host, URI.decode_www_form_component(config.user), URI.decode_www_form_component(config.password)]
+rescue URI::InvalidURIError
+  nil
+end
+
+def upload_blog_image(request)
+  authorization_error = blog_admin_error(request)
+  return authorization_error if authorization_error
+
+  payload = request_body(request)
+  content_type = payload["contentType"].to_s
+  encoded_file = payload["fileData"].to_s
+  allowed_types = %w[image/jpeg image/png image/webp image/avif]
+  return [{ "detail" => "Upload a JPG, PNG, WebP, or AVIF image." }, 400] unless allowed_types.include?(content_type)
+  return [{ "detail" => "Image upload is required." }, 400] if encoded_file.empty?
+  return [{ "detail" => "Image must be 3 MB or smaller." }, 400] if encoded_file.bytesize > 4 * 1024 * 1024
+
+  image_bytes = Base64.strict_decode64(encoded_file)
+  return [{ "detail" => "Image must be 3 MB or smaller." }, 400] if image_bytes.bytesize > 3 * 1024 * 1024
+
+  cloud_name, api_key, api_secret = cloudinary_credentials
+  return [{ "detail" => "Image uploads are not configured." }, 503] unless cloud_name
+
+  timestamp = Time.now.to_i.to_s
+  public_id = "mani_portfolio/blogs/#{SecureRandom.uuid}"
+  signature_source = "public_id=#{public_id}&timestamp=#{timestamp}#{api_secret}"
+  signature = Digest::SHA1.hexdigest(signature_source)
+  upload_uri = URI("https://api.cloudinary.com/v1_1/#{cloud_name}/image/upload")
+  response = Net::HTTP.post_form(upload_uri, {
+    "file" => "data:#{content_type};base64,#{encoded_file}",
+    "public_id" => public_id,
+    "timestamp" => timestamp,
+    "api_key" => api_key,
+    "signature" => signature
+  })
+  result = JSON.parse(response.body)
+  return [{ "detail" => result["error"]&.fetch("message", nil) || "Image upload failed." }, 502] unless response.is_a?(Net::HTTPSuccess)
+
+  [{ "imageUrl" => result.fetch("secure_url") }, 201]
+rescue ArgumentError
+  [{ "detail" => "The selected image file is invalid." }, 400]
+rescue JSON::ParserError, KeyError
+  [{ "detail" => "Image upload failed." }, 502]
 end
 
 def send_file(response, path, content_type)
@@ -282,6 +341,13 @@ Handler = proc do |request, response|
       json_response(response, with_database_retry { { "items" => blog_posts } })
     elsif request.request_method == "POST"
       payload, status = with_database_retry { create_blog_post(request) }
+      json_response(response, payload, status)
+    else
+      json_response(response, { "detail" => "Method not allowed." }, 405)
+    end
+  elsif path == "/blog-upload/" || path == "/blog-upload"
+    if request.request_method == "POST"
+      payload, status = upload_blog_image(request)
       json_response(response, payload, status)
     else
       json_response(response, { "detail" => "Method not allowed." }, 405)
