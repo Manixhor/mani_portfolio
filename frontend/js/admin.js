@@ -8,7 +8,7 @@ let adminPassword = "";
 const blankItems = {
   experience: { role: "", company: "", period: "", points: "", order: 0, is_visible: true },
   skills: { name: "", icon: "", order: 0, is_visible: true },
-  projects: { name: "", description: "", brief: "", stack: "", live_url: "", show_live_url: true, github_url: "", show_github_url: true, image_url: "", image_alt: "", order: 0, is_visible: true },
+  projects: { name: "", description: "", brief: "", stack: "", live_url: "", show_live_url: true, github_url: "", show_github_url: true, blog_url: "", image_url: "", image_alt: "", order: 0, is_visible: true },
   certifications: { title: "", issuer: "", issued_date: "", credential_url: "", description: "", image_url: "", image_alt: "", order: 0, is_visible: true },
 };
 

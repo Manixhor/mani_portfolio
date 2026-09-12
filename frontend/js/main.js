@@ -357,6 +357,7 @@ function renderProjects(projects = {}) {
     trigger.dataset.brief = plainText(project.brief || project.description);
     trigger.dataset.live = cleanProjectUrl(project.liveUrl);
     trigger.dataset.github = cleanProjectUrl(project.githubUrl);
+    trigger.dataset.blog = cleanProjectUrl(project.blogUrl);
     trigger.addEventListener("click", () => openProjectModal(trigger));
 
     grid.appendChild(article);
@@ -451,6 +452,7 @@ const modalBrief = document.getElementById("modal-brief");
 const modalStack = document.getElementById("modal-stack");
 const modalLive = document.getElementById("modal-live");
 const modalGithub = document.getElementById("modal-github");
+const modalBlog = document.getElementById("modal-blog");
 const modalLinks = projectModal?.querySelector(".project-modal__links");
 
 function setProjectLink(link, url) {
@@ -483,8 +485,9 @@ function openProjectModal(trigger) {
   modalStack.textContent = trigger.dataset.stack || "";
   const hasLiveLink = setProjectLink(modalLive, trigger.dataset.live);
   const hasGithubLink = setProjectLink(modalGithub, trigger.dataset.github);
+  const hasBlogLink = setProjectLink(modalBlog, trigger.dataset.blog);
   if (modalLinks) {
-    modalLinks.hidden = !hasLiveLink && !hasGithubLink;
+    modalLinks.hidden = !hasLiveLink && !hasGithubLink && !hasBlogLink;
   }
 
   projectModal.classList.add("is-open");
@@ -562,7 +565,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=17").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=18").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });

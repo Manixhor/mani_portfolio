@@ -64,6 +64,7 @@ def image_url(value)
 end
 
 def portfolio_config
+  ensure_project_blog_column
   config = database.exec_params(<<~SQL).first
     SELECT hero, about, experience, skills, projects, contact, footer
     FROM portfolio_data_portfolioconfig
@@ -118,7 +119,7 @@ def portfolio_config
 
   projects = json_value(config["projects"])
   projects["items"] = database.exec(<<~SQL).map do |item|
-    SELECT name, description, brief, stack, live_url, show_live_url, github_url, show_github_url, image, image_url, image_alt
+    SELECT name, description, brief, stack, live_url, show_live_url, github_url, show_github_url, blog_url, image, image_url, image_alt
     FROM portfolio_data_projectitem
     WHERE is_visible = TRUE
     ORDER BY "order" ASC, id DESC
@@ -130,6 +131,7 @@ def portfolio_config
       "stack" => item["stack"].to_s,
       "liveUrl" => item["show_live_url"] == "t" ? item["live_url"].to_s : "",
       "githubUrl" => item["show_github_url"] == "t" ? item["github_url"].to_s : "",
+      "blogUrl" => item["blog_url"].to_s,
       "imageUrl" => image_url(item["image"]) || image_url(item["image_url"]) || "",
       "imageAlt" => item["image_alt"].to_s
     }
@@ -146,6 +148,13 @@ def portfolio_config
     "footer" => json_value(config["footer"]),
     "updated_at" => Time.now.utc.iso8601
   }
+end
+
+def ensure_project_blog_column
+  return if @project_blog_column_ready
+
+  database.exec("ALTER TABLE portfolio_data_projectitem ADD COLUMN IF NOT EXISTS blog_url TEXT NOT NULL DEFAULT ''")
+  @project_blog_column_ready = true
 end
 
 def request_body(request)
@@ -265,6 +274,7 @@ def portfolio_admin_data(request)
   authorization_error = portfolio_admin_error(request)
   return authorization_error if authorization_error
 
+  ensure_project_blog_column
   config = database.exec(<<~SQL).first
     SELECT hero, about, experience, skills, projects, contact, footer, notification_emails
     FROM portfolio_data_portfolioconfig WHERE id = 1
@@ -274,7 +284,7 @@ def portfolio_admin_data(request)
   collections = {
     "experience" => database.exec('SELECT id, role, company, period, points, "order", is_visible FROM portfolio_data_experienceitem ORDER BY "order", id').to_a,
     "skills" => database.exec('SELECT id, name, icon, "order", is_visible FROM portfolio_data_skillitem ORDER BY "order", id').to_a,
-    "projects" => database.exec('SELECT id, name, description, brief, stack, live_url, show_live_url, github_url, show_github_url, image_url, image_alt, "order", is_visible FROM portfolio_data_projectitem ORDER BY "order", id').to_a,
+    "projects" => database.exec('SELECT id, name, description, brief, stack, live_url, show_live_url, github_url, show_github_url, blog_url, image_url, image_alt, "order", is_visible FROM portfolio_data_projectitem ORDER BY "order", id').to_a,
     "certifications" => database.exec('SELECT id, title, issuer, issued_date, credential_url, description, image_url, image_alt, "order", is_visible FROM portfolio_data_certificationitem ORDER BY "order", id').to_a
   }
   [{
@@ -310,6 +320,7 @@ def save_portfolio_admin_data(request)
   collections = payload["collections"]
   return [{ "detail" => "Invalid admin content payload." }, 400] unless config.is_a?(Hash) && collections.is_a?(Hash)
 
+  ensure_project_blog_column
   database.transaction do |connection|
     connection.exec_params(
       "UPDATE portfolio_data_portfolioconfig SET hero = $1::jsonb, about = $2::jsonb, experience = $3::jsonb, skills = $4::jsonb, projects = $5::jsonb, contact = $6::jsonb, footer = $7::jsonb, notification_emails = $8, updated_at = NOW() WHERE id = 1",
@@ -317,7 +328,7 @@ def save_portfolio_admin_data(request)
     )
     replace_admin_collection("portfolio_data_experienceitem", %w[role company period points order is_visible], Array(collections["experience"]))
     replace_admin_collection("portfolio_data_skillitem", %w[name icon order is_visible], Array(collections["skills"]))
-    replace_admin_collection("portfolio_data_projectitem", %w[name description brief stack live_url show_live_url github_url show_github_url image_url image_alt order is_visible], Array(collections["projects"]))
+    replace_admin_collection("portfolio_data_projectitem", %w[name description brief stack live_url show_live_url github_url show_github_url blog_url image_url image_alt order is_visible], Array(collections["projects"]))
     replace_admin_collection("portfolio_data_certificationitem", %w[title issuer issued_date credential_url description image_url image_alt order is_visible], Array(collections["certifications"]))
   end
   [{ "detail" => "Portfolio content saved." }, 200]
