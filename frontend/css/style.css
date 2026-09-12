@@ -712,6 +712,10 @@ a {
   transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
+.add-blog-button[hidden] {
+  display: none;
+}
+
 .add-blog-button:hover {
   transform: rotate(90deg);
   background: var(--white);
