@@ -362,8 +362,10 @@ a {
 
 .skills-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  width: min(100%, 1180px);
+  gap: 24px 18px;
+  margin: 0 auto;
   align-items: end;
 }
 
@@ -371,7 +373,7 @@ a {
   display: grid;
   justify-items: center;
   gap: 12px;
-  min-height: 88px;
+  min-height: 104px;
   border-radius: var(--radius-md);
   color: var(--ink);
 }
@@ -400,7 +402,7 @@ a {
   overflow-wrap: anywhere;
   text-align: center;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.2;
 }
 

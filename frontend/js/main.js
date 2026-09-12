@@ -562,7 +562,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=16").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=17").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
