@@ -360,7 +360,7 @@ Handler = proc do |request, response|
     end
   elsif path == "/" || path.empty?
     static_file(response, File.join(FRONTEND, "index.html"))
-  elsif path == "/blogs/" || path == "/blogs"
+  elsif path == "/blogs/" || path == "/blogs" || path == "/blogs/admin/" || path == "/blogs/admin"
     static_file(response, File.join(FRONTEND, "blogs.html"))
   elsif path == "/sw.js"
     static_file(response, File.join(FRONTEND, "sw.js"))

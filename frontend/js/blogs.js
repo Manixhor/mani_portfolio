@@ -5,7 +5,7 @@ const blogForm = document.querySelector("[data-blog-form]");
 const nav = document.querySelector(".top-nav");
 const navToggle = document.querySelector("[data-nav-toggle]");
 const navLinks = document.querySelector("[data-nav-links]");
-const adminMode = new URLSearchParams(window.location.search).get("admin") === "1";
+const adminMode = window.location.pathname.replace(/\/$/, "") === "/blogs/admin";
 const mediaTypeInput = document.querySelector("[data-blog-media-type]");
 const mediaInput = document.querySelector("[data-blog-media-input]");
 const maxImageBytes = 10 * 1024 * 1024;
