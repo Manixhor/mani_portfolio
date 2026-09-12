@@ -6,7 +6,10 @@ const nav = document.querySelector(".top-nav");
 const navToggle = document.querySelector("[data-nav-toggle]");
 const navLinks = document.querySelector("[data-nav-links]");
 const adminMode = new URLSearchParams(window.location.search).get("admin") === "1";
-const maxImageBytes = 3 * 1024 * 1024;
+const mediaTypeInput = document.querySelector("[data-blog-media-type]");
+const mediaInput = document.querySelector("[data-blog-media-input]");
+const maxImageBytes = 10 * 1024 * 1024;
+const maxVideoBytes = 50 * 1024 * 1024;
 
 function setStatus(message, isError = false) {
   if (!blogStatus) return;
@@ -34,6 +37,13 @@ function renderPosts(items) {
       image.loading = "lazy";
       image.addEventListener("error", () => image.remove());
       article.appendChild(image);
+    } else if (post.videoUrl) {
+      const video = document.createElement("video");
+      video.src = post.videoUrl;
+      video.controls = true;
+      video.preload = "metadata";
+      video.playsInline = true;
+      article.appendChild(video);
     }
 
     const body = document.createElement("div");
@@ -69,43 +79,56 @@ if (adminMode && addBlogButton) addBlogButton.hidden = false;
 addBlogButton?.addEventListener("click", () => blogDialog?.showModal());
 document.querySelectorAll("[data-close-blog-form]").forEach((button) => button.addEventListener("click", closeDialog));
 
-function fileAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.addEventListener("load", () => resolve(String(reader.result).split(",", 2)[1] || ""));
-    reader.addEventListener("error", () => reject(new Error("Image could not be read.")));
-    reader.readAsDataURL(file);
-  });
+function updateMediaInput() {
+  if (!mediaInput || !mediaTypeInput) return;
+  const isVideo = mediaTypeInput.value === "video";
+  mediaInput.accept = isVideo ? "video/mp4,video/webm,video/quicktime" : "image/jpeg,image/png,image/webp,image/avif";
+  mediaInput.value = "";
 }
+
+mediaTypeInput?.addEventListener("change", updateMediaInput);
 
 blogForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const formData = new FormData(blogForm);
   const publishButton = blogForm.querySelector('button[type="submit"]');
   const formStatus = document.querySelector("[data-blog-form-status]");
-  const image = formData.get("image");
+  const media = formData.get("media");
+  const mediaType = formData.get("mediaType");
   const password = formData.get("password");
   publishButton.disabled = true;
   formStatus.textContent = "";
 
   try {
-    if (!(image instanceof File) || !image.size) throw new Error("Choose an image for the post.");
-    if (image.size > maxImageBytes) throw new Error("Image must be 3 MB or smaller.");
+    if (!(media instanceof File) || !media.size) throw new Error("Choose an image or video for the post.");
+    const maxFileBytes = mediaType === "video" ? maxVideoBytes : maxImageBytes;
+    if (media.size > maxFileBytes) throw new Error(`${mediaType === "video" ? "Video" : "Image"} must be ${maxFileBytes / 1024 / 1024} MB or smaller.`);
 
-    formStatus.textContent = "Uploading image...";
-    const uploadResponse = await fetch("/blog-upload/", {
+    formStatus.textContent = "Preparing upload...";
+    const signatureResponse = await fetch("/blog-upload/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Blog-Admin-Password": password,
       },
       body: JSON.stringify({
-        contentType: image.type,
-        fileData: await fileAsBase64(image),
+        contentType: media.type,
       }),
     });
+    const signatureData = await signatureResponse.json();
+    if (!signatureResponse.ok) throw new Error(signatureData.detail || "Upload could not be prepared.");
+
+    formStatus.textContent = "Uploading media...";
+    const uploadForm = new FormData();
+    uploadForm.append("file", media);
+    uploadForm.append("public_id", signatureData.publicId);
+    uploadForm.append("timestamp", signatureData.timestamp);
+    uploadForm.append("api_key", signatureData.apiKey);
+    uploadForm.append("signature", signatureData.signature);
+    uploadForm.append("allowed_formats", signatureData.allowedFormats);
+    const uploadResponse = await fetch(signatureData.uploadUrl, { method: "POST", body: uploadForm });
     const uploadData = await uploadResponse.json();
-    if (!uploadResponse.ok) throw new Error(uploadData.detail || "Image could not be uploaded.");
+    if (!uploadResponse.ok) throw new Error(uploadData.error?.message || "Media could not be uploaded.");
 
     formStatus.textContent = "Publishing post...";
     const response = await fetch("/blog-data/", {
@@ -115,7 +138,8 @@ blogForm?.addEventListener("submit", async (event) => {
         "X-Blog-Admin-Password": password,
       },
       body: JSON.stringify({
-        imageUrl: uploadData.imageUrl,
+        imageUrl: signatureData.resourceType === "image" ? uploadData.secure_url : "",
+        videoUrl: signatureData.resourceType === "video" ? uploadData.secure_url : "",
         header: formData.get("header"),
         subheader: formData.get("subheader"),
         description: formData.get("description"),
@@ -124,6 +148,7 @@ blogForm?.addEventListener("submit", async (event) => {
     const data = await response.json();
     if (!response.ok) throw new Error(data.detail || "Blog could not be published.");
     blogForm.reset();
+    updateMediaInput();
     closeDialog();
     await loadPosts();
   } catch (error) {

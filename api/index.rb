@@ -1,7 +1,5 @@
 require "json"
-require "base64"
 require "digest/sha1"
-require "net/http"
 require "securerandom"
 require "time"
 require "uri"
@@ -180,25 +178,28 @@ def ensure_blog_table
     CREATE TABLE IF NOT EXISTS portfolio_blogpost (
       id BIGSERIAL PRIMARY KEY,
       image_url TEXT NOT NULL DEFAULT '',
+      video_url TEXT NOT NULL DEFAULT '',
       header VARCHAR(180) NOT NULL,
       subheader VARCHAR(240) NOT NULL DEFAULT '',
       description TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   SQL
+  database.exec("ALTER TABLE portfolio_blogpost ADD COLUMN IF NOT EXISTS video_url TEXT NOT NULL DEFAULT ''")
   @blog_table_ready = true
 end
 
 def blog_posts
   ensure_blog_table
   database.exec(<<~SQL).map do |post|
-    SELECT id, image_url, header, subheader, description, created_at
+    SELECT id, image_url, video_url, header, subheader, description, created_at
     FROM portfolio_blogpost
     ORDER BY created_at DESC, id DESC
   SQL
     {
       "id" => post["id"].to_i,
       "imageUrl" => post["image_url"].to_s,
+      "videoUrl" => post["video_url"].to_s,
       "header" => post["header"].to_s,
       "subheader" => post["subheader"].to_s,
       "description" => post["description"].to_s,
@@ -216,21 +217,25 @@ def create_blog_post(request)
   subheader = payload["subheader"].to_s.strip
   description = payload["description"].to_s.strip
   image_url = payload["imageUrl"].to_s.strip
+  video_url = payload["videoUrl"].to_s.strip
   return [{ "detail" => "Header and description are required." }, 400] if header.empty? || description.empty?
+  return [{ "detail" => "Add either an image or a video." }, 400] if image_url.empty? && video_url.empty?
+  return [{ "detail" => "A post can contain one media file." }, 400] unless image_url.empty? || video_url.empty?
 
   ensure_blog_table
   post = database.exec_params(
     <<~SQL,
-      INSERT INTO portfolio_blogpost (image_url, header, subheader, description)
-      VALUES ($1, $2, $3, $4)
-      RETURNING id, image_url, header, subheader, description, created_at
+      INSERT INTO portfolio_blogpost (image_url, video_url, header, subheader, description)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id, image_url, video_url, header, subheader, description, created_at
     SQL
-    [image_url, header, subheader, description]
+    [image_url, video_url, header, subheader, description]
   ).first
 
   [{
     "id" => post["id"].to_i,
     "imageUrl" => post["image_url"].to_s,
+    "videoUrl" => post["video_url"].to_s,
     "header" => post["header"].to_s,
     "subheader" => post["subheader"].to_s,
     "description" => post["description"].to_s,
@@ -266,44 +271,35 @@ rescue URI::InvalidURIError
   nil
 end
 
-def upload_blog_image(request)
+def create_blog_upload_signature(request)
   authorization_error = blog_admin_error(request)
   return authorization_error if authorization_error
 
   payload = request_body(request)
   content_type = payload["contentType"].to_s
-  encoded_file = payload["fileData"].to_s
-  allowed_types = %w[image/jpeg image/png image/webp image/avif]
-  return [{ "detail" => "Upload a JPG, PNG, WebP, or AVIF image." }, 400] unless allowed_types.include?(content_type)
-  return [{ "detail" => "Image upload is required." }, 400] if encoded_file.empty?
-  return [{ "detail" => "Image must be 3 MB or smaller." }, 400] if encoded_file.bytesize > 4 * 1024 * 1024
-
-  image_bytes = Base64.strict_decode64(encoded_file)
-  return [{ "detail" => "Image must be 3 MB or smaller." }, 400] if image_bytes.bytesize > 3 * 1024 * 1024
+  image_types = %w[image/jpeg image/png image/webp image/avif]
+  video_types = %w[video/mp4 video/webm video/quicktime]
+  resource_type = image_types.include?(content_type) ? "image" : "video"
+  allowed_formats = resource_type == "image" ? "jpg,jpeg,png,webp,avif" : "mp4,webm,mov"
+  return [{ "detail" => "Upload a JPG, PNG, WebP, AVIF, MP4, WebM, or MOV file." }, 400] unless image_types.include?(content_type) || video_types.include?(content_type)
 
   cloud_name, api_key, api_secret = cloudinary_credentials
-  return [{ "detail" => "Image uploads are not configured." }, 503] unless cloud_name
+  return [{ "detail" => "Media uploads are not configured." }, 503] unless cloud_name
 
   timestamp = Time.now.to_i.to_s
   public_id = "mani_portfolio/blogs/#{SecureRandom.uuid}"
-  signature_source = "public_id=#{public_id}&timestamp=#{timestamp}#{api_secret}"
+  signature_source = "allowed_formats=#{allowed_formats}&public_id=#{public_id}&timestamp=#{timestamp}#{api_secret}"
   signature = Digest::SHA1.hexdigest(signature_source)
-  upload_uri = URI("https://api.cloudinary.com/v1_1/#{cloud_name}/image/upload")
-  response = Net::HTTP.post_form(upload_uri, {
-    "file" => "data:#{content_type};base64,#{encoded_file}",
-    "public_id" => public_id,
-    "timestamp" => timestamp,
-    "api_key" => api_key,
-    "signature" => signature
-  })
-  result = JSON.parse(response.body)
-  return [{ "detail" => result["error"]&.fetch("message", nil) || "Image upload failed." }, 502] unless response.is_a?(Net::HTTPSuccess)
 
-  [{ "imageUrl" => result.fetch("secure_url") }, 201]
-rescue ArgumentError
-  [{ "detail" => "The selected image file is invalid." }, 400]
-rescue JSON::ParserError, KeyError
-  [{ "detail" => "Image upload failed." }, 502]
+  [{
+    "uploadUrl" => "https://api.cloudinary.com/v1_1/#{cloud_name}/#{resource_type}/upload",
+    "resourceType" => resource_type,
+    "publicId" => public_id,
+    "timestamp" => timestamp,
+    "apiKey" => api_key,
+    "signature" => signature,
+    "allowedFormats" => allowed_formats
+  }, 200]
 end
 
 def send_file(response, path, content_type)
@@ -357,7 +353,7 @@ Handler = proc do |request, response|
     end
   elsif path == "/blog-upload/" || path == "/blog-upload"
     if request.request_method == "POST"
-      payload, status = upload_blog_image(request)
+      payload, status = create_blog_upload_signature(request)
       json_response(response, payload, status)
     else
       json_response(response, { "detail" => "Method not allowed." }, 405)

@@ -745,7 +745,8 @@ a {
   background: var(--white);
 }
 
-.blog-card img {
+.blog-card img,
+.blog-card video {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
@@ -838,6 +839,7 @@ a {
 }
 
 .blog-form input,
+.blog-form select,
 .blog-form textarea {
   width: 100%;
   border: 1px solid var(--line);
@@ -855,6 +857,7 @@ a {
 }
 
 .blog-form input:focus,
+.blog-form select:focus,
 .blog-form textarea:focus {
   outline: 2px solid var(--ink);
   outline-offset: 1px;

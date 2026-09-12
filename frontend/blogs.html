@@ -53,7 +53,13 @@
         </div>
         <button class="blog-dialog__close" type="button" data-close-blog-form aria-label="Close">&times;</button>
       </div>
-      <label>Image<input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required /></label>
+      <label>Media type
+        <select name="mediaType" data-blog-media-type>
+          <option value="image">Image</option>
+          <option value="video">Video</option>
+        </select>
+      </label>
+      <label>Media file<input name="media" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required data-blog-media-input /></label>
       <label>Header<input name="header" type="text" required maxlength="180" /></label>
       <label>Subheader<input name="subheader" type="text" maxlength="240" /></label>
       <label>Description<textarea name="description" rows="7" required></textarea></label>
