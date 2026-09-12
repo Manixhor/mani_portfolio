@@ -754,12 +754,17 @@ a {
 .admin-status, [data-admin-login-status] { min-height: 1.25rem; margin: 0; color: #197048; font-weight: 600; }
 .admin-status.is-error, [data-admin-login-status].is-error { color: #a31919; }
 .admin-section { display: grid; gap: 14px; }
+.admin-fields, .admin-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.admin-item { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 20px; border: 1px solid var(--line); border-radius: 6px; }
+.admin-item label:has(textarea), .admin-item label:has(input[type="url"]) { grid-column: 1 / -1; }
+.admin-remove { justify-self: end; border: 0; background: transparent; color: #a31919; font: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
 .admin-section p { margin: 0; color: var(--muted); line-height: 1.45; }
 .admin-section textarea { min-height: 250px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; line-height: 1.45; }
 
 @media (max-width: 640px) {
   .admin-shell { width: min(100% - 28px, 1180px); padding-top: 18px; }
   .admin-header, .admin-dashboard__heading, .admin-section__header { align-items: flex-start; flex-direction: column; }
+  .admin-fields, .admin-items, .admin-item { grid-template-columns: 1fr; }
   .admin-dashboard__heading > button { width: 100%; }
 }
 
