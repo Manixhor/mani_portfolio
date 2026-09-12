@@ -738,6 +738,31 @@ a {
   color: #a31919;
 }
 
+.admin-page { background: var(--soft); }
+.admin-shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 72px; }
+.admin-header, .admin-dashboard__heading, .admin-section__header { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.admin-header { margin-bottom: 56px; font-weight: 700; }
+.admin-header a:last-child { color: var(--ink); }
+.admin-login, .admin-section { border: 1px solid var(--line); border-radius: 8px; background: var(--white); padding: clamp(24px, 4vw, 42px); }
+.admin-login { max-width: 520px; margin: 8vh auto; }
+.admin-login h1, .admin-dashboard h1, .admin-section h2 { margin: 0; }
+.admin-login form { display: grid; gap: 16px; margin-top: 28px; }
+.admin-login label, .admin-section label { display: grid; gap: 8px; font-weight: 700; }
+.admin-login input, .admin-section input, .admin-section textarea { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 12px; background: var(--white); color: var(--ink); font: inherit; }
+.admin-login button, .admin-dashboard__heading > button, .admin-section__header > button { min-height: 42px; border: 1px solid var(--ink); border-radius: 6px; padding: 0 16px; background: var(--ink); color: var(--white); font: inherit; font-weight: 700; cursor: pointer; }
+.admin-dashboard { display: grid; gap: 20px; }
+.admin-status, [data-admin-login-status] { min-height: 1.25rem; margin: 0; color: #197048; font-weight: 600; }
+.admin-status.is-error, [data-admin-login-status].is-error { color: #a31919; }
+.admin-section { display: grid; gap: 14px; }
+.admin-section p { margin: 0; color: var(--muted); line-height: 1.45; }
+.admin-section textarea { min-height: 250px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; line-height: 1.45; }
+
+@media (max-width: 640px) {
+  .admin-shell { width: min(100% - 28px, 1180px); padding-top: 18px; }
+  .admin-header, .admin-dashboard__heading, .admin-section__header { align-items: flex-start; flex-direction: column; }
+  .admin-dashboard__heading > button { width: 100%; }
+}
+
 .blog-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

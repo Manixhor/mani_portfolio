@@ -19,7 +19,7 @@ def json_response(response, payload, status = 200)
   response.status = status
   response["Content-Type"] = "application/json; charset=utf-8"
   response["Access-Control-Allow-Origin"] = ENV.fetch("CORS_ALLOWED_ORIGINS", "*").split(",").first.strip
-  response["Access-Control-Allow-Headers"] = "Content-Type, Accept, X-Blog-Admin-Password"
+  response["Access-Control-Allow-Headers"] = "Content-Type, Accept, X-Blog-Admin-Password, X-Portfolio-Admin-Password"
   response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
   response.body = JSON.generate(payload)
 end
@@ -252,6 +252,77 @@ def blog_admin_error(request)
   nil
 end
 
+def portfolio_admin_error(request)
+  expected_password = ENV.fetch("PORTFOLIO_ADMIN_PASSWORD", ENV.fetch("BLOG_ADMIN_PASSWORD", "")).to_s
+  supplied_password = request_header(request, "x-portfolio-admin-password")
+  return [{ "detail" => "Portfolio admin is not configured." }, 503] if expected_password.empty?
+  return [{ "detail" => "Incorrect admin password." }, 401] unless supplied_password == expected_password
+
+  nil
+end
+
+def portfolio_admin_data(request)
+  authorization_error = portfolio_admin_error(request)
+  return authorization_error if authorization_error
+
+  config = database.exec(<<~SQL).first
+    SELECT hero, about, experience, skills, projects, contact, footer, notification_emails
+    FROM portfolio_data_portfolioconfig WHERE id = 1
+  SQL
+  return [{ "detail" => "Portfolio configuration was not found." }, 404] unless config
+
+  collections = {
+    "experience" => database.exec('SELECT id, role, company, period, points, "order", is_visible FROM portfolio_data_experienceitem ORDER BY "order", id').to_a,
+    "skills" => database.exec('SELECT id, name, icon, "order", is_visible FROM portfolio_data_skillitem ORDER BY "order", id').to_a,
+    "projects" => database.exec('SELECT id, name, description, brief, stack, live_url, show_live_url, github_url, show_github_url, image_url, image_alt, "order", is_visible FROM portfolio_data_projectitem ORDER BY "order", id').to_a,
+    "certifications" => database.exec('SELECT id, title, issuer, issued_date, credential_url, description, image_url, image_alt, "order", is_visible FROM portfolio_data_certificationitem ORDER BY "order", id').to_a
+  }
+  [{
+    "config" => %w[hero about experience skills projects contact footer].to_h { |key| [key, json_value(config[key])] },
+    "notificationEmails" => config["notification_emails"].to_s,
+    "collections" => collections
+  }, 200]
+end
+
+def replace_admin_collection(table, columns, items)
+  next_id = database.exec("SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM #{table}").first["next_id"].to_i
+  database.exec("DELETE FROM #{table}")
+  items.each_with_index do |item, index|
+    item["id"] = next_id + index if item["id"].to_i <= 0
+    values = [item["id"].to_i] + columns.map do |column|
+      value = item[column]
+      value = index + 1 if column == "order" && value.nil?
+      value = false if column == "is_visible" && value.nil?
+      value
+    end
+    all_columns = ["id"] + columns
+    placeholders = all_columns.each_index.map { |position| "$#{position + 1}" }.join(", ")
+    database.exec_params("INSERT INTO #{table} (#{all_columns.map { |column| %Q(\"#{column}\") }.join(', ')}) VALUES (#{placeholders})", values)
+  end
+end
+
+def save_portfolio_admin_data(request)
+  authorization_error = portfolio_admin_error(request)
+  return authorization_error if authorization_error
+
+  payload = request_body(request)
+  config = payload["config"]
+  collections = payload["collections"]
+  return [{ "detail" => "Invalid admin content payload." }, 400] unless config.is_a?(Hash) && collections.is_a?(Hash)
+
+  database.transaction do |connection|
+    connection.exec_params(
+      "UPDATE portfolio_data_portfolioconfig SET hero = $1::jsonb, about = $2::jsonb, experience = $3::jsonb, skills = $4::jsonb, projects = $5::jsonb, contact = $6::jsonb, footer = $7::jsonb, notification_emails = $8, updated_at = NOW() WHERE id = 1",
+      %w[hero about experience skills projects contact footer].map { |key| JSON.generate(config[key] || {}) } + [payload["notificationEmails"].to_s]
+    )
+    replace_admin_collection("portfolio_data_experienceitem", %w[role company period points order is_visible], Array(collections["experience"]))
+    replace_admin_collection("portfolio_data_skillitem", %w[name icon order is_visible], Array(collections["skills"]))
+    replace_admin_collection("portfolio_data_projectitem", %w[name description brief stack live_url show_live_url github_url show_github_url image_url image_alt order is_visible], Array(collections["projects"]))
+    replace_admin_collection("portfolio_data_certificationitem", %w[title issuer issued_date credential_url description image_url image_alt order is_visible], Array(collections["certifications"]))
+  end
+  [{ "detail" => "Portfolio content saved." }, 200]
+end
+
 def request_header(request, name)
   header_method = request.method(:header)
   value = if header_method.arity.zero?
@@ -332,7 +403,7 @@ Handler = proc do |request, response|
   if request.request_method == "OPTIONS"
     response.status = 204
     response["Access-Control-Allow-Origin"] = "*"
-    response["Access-Control-Allow-Headers"] = "Content-Type, Accept, X-Blog-Admin-Password"
+    response["Access-Control-Allow-Headers"] = "Content-Type, Accept, X-Blog-Admin-Password, X-Portfolio-Admin-Password"
     response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     response.body = ""
   elsif path == "/healthz/" || path == "/healthz"
@@ -358,16 +429,30 @@ Handler = proc do |request, response|
     else
       json_response(response, { "detail" => "Method not allowed." }, 405)
     end
+  elsif path == "/admin-data/" || path == "/admin-data"
+    if request.request_method == "GET"
+      payload, status = with_database_retry { portfolio_admin_data(request) }
+      json_response(response, payload, status)
+    elsif request.request_method == "POST"
+      payload, status = with_database_retry { save_portfolio_admin_data(request) }
+      json_response(response, payload, status)
+    else
+      json_response(response, { "detail" => "Method not allowed." }, 405)
+    end
   elsif path == "/" || path.empty?
     static_file(response, File.join(FRONTEND, "index.html"))
   elsif path == "/blogs/" || path == "/blogs" || path == "/blogs/admin/" || path == "/blogs/admin"
     static_file(response, File.join(FRONTEND, "blogs.html"))
+  elsif path == "/admin/" || path == "/admin"
+    static_file(response, File.join(FRONTEND, "admin.html"))
   elsif path == "/sw.js"
     static_file(response, File.join(FRONTEND, "sw.js"))
   elsif path == "/app.js"
     static_file(response, File.join(FRONTEND, "js", "main.js"))
   elsif path == "/blogs.js"
     static_file(response, File.join(FRONTEND, "js", "blogs.js"))
+  elsif path == "/admin.js"
+    static_file(response, File.join(FRONTEND, "js", "admin.js"))
   elsif path == "/manifest.webmanifest"
     static_file(response, File.join(FRONTEND, "manifest.webmanifest"))
   elsif path.start_with?("/static/css/", "/static/js/", "/static/icons/", "/css/", "/js/", "/icons/")
