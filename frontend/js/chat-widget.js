@@ -12,10 +12,10 @@ if (chatbot) {
   const submit = chatbot.querySelector("[data-chatbot-submit]");
   const status = chatbot.querySelector("[data-chatbot-status]");
   const questions = [
-    { key: "subject", prompt: "What brings you here?", options: ["A full-time role", "A project opportunity", "A collaboration"] },
-    { key: "name", prompt: "What should I call you?", autocomplete: "name" },
-    { key: "email", prompt: "Where can Mani reply?", type: "email", autocomplete: "email" },
-    { key: "message", prompt: "What would you like Mani to know?", multiline: true },
+    { key: "subject", prompt: "How can Mani best support your team or project today?", options: ["A full-time role", "A project opportunity", "A collaboration"] },
+    { key: "name", prompt: "May I know your name?", autocomplete: "name" },
+    { key: "email", prompt: "What is the best email address for a reply?", type: "email", autocomplete: "email" },
+    { key: "message", prompt: "Please share any details you would like Mani to know.", multiline: true },
   ];
   let answers = {};
   let index = 0;
@@ -33,12 +33,29 @@ if (chatbot) {
     messages.scrollTop = messages.scrollHeight;
   }
 
-  function submitAnswer(value) {
+  async function portfolioReply(intent) {
+    try {
+      const response = await fetch("/api/assistant/reply/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ intent }),
+      });
+      const data = await response.json();
+      return response.ok ? data.reply : "Thank you for considering Mani. Please share a few details so he can respond thoughtfully.";
+    } catch (_error) {
+      return "Thank you for considering Mani. Please share a few details so he can respond thoughtfully.";
+    }
+  }
+
+  async function submitAnswer(value) {
     const question = questions[index];
     if (!value) return;
+    choices.innerHTML = "";
+    inputSlot.innerHTML = "";
     answers[question.key] = value;
     addMessage(value, "visitor");
     index += 1;
+    if (question.key === "subject") addMessage(await portfolioReply(value));
     showQuestion();
   }
 
@@ -90,7 +107,7 @@ if (chatbot) {
     chatbot.classList.add("is-open");
     launcher.hidden = true;
     windowPanel.hidden = false;
-    addMessage("Hi, I am Mani's portfolio assistant.");
+    addMessage("Welcome. I am Mani's portfolio assistant, and I would be glad to help you connect.");
     window.setTimeout(showQuestion, 220);
   }
 

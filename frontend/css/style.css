@@ -1377,6 +1377,7 @@ a {
 .contact-chat__composer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
   gap: 10px;
   padding: 16px 24px 10px;
   border-top: 1px solid var(--line);
@@ -1403,6 +1404,11 @@ a {
 .contact-chat__composer button:disabled {
   cursor: wait;
   opacity: 0.62;
+}
+
+.contact-chat__composer button {
+  align-self: end;
+  height: 44px;
 }
 
 .contact-chat__status {

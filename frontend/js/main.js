@@ -524,10 +524,10 @@ function setupContactForm() {
   if (!form || !chat || !intro || !start || !messages || !inputSlot || !inputLabel || !submit) return;
 
   const questions = [
-    { key: "name", prompt: "Hi. What should I call you?", autocomplete: "name" },
-    { key: "email", prompt: "What email should I reply to?", type: "email", autocomplete: "email" },
-    { key: "subject", prompt: "What would you like to discuss?", placeholder: "A role, project, or collaboration" },
-    { key: "message", prompt: "What would you like me to know?", multiline: true },
+    { key: "name", prompt: "May I know your name?", autocomplete: "name" },
+    { key: "email", prompt: "What is the best email address for a reply?", type: "email", autocomplete: "email" },
+    { key: "subject", prompt: "What type of opportunity would you like to discuss?", placeholder: "A role, project, or collaboration" },
+    { key: "message", prompt: "Please share any details you would like Mani to know.", multiline: true },
   ];
   let answers = {};
   let questionIndex = 0;
@@ -568,7 +568,7 @@ function setupContactForm() {
     chat.classList.add("is-active");
     intro.remove();
     form.hidden = false;
-    addMessage("Thanks for reaching out. I will keep this quick.");
+    addMessage("Welcome. I would be delighted to learn more about your opportunity.");
     window.setTimeout(() => showQuestion(questionIndex), 240);
   }
 

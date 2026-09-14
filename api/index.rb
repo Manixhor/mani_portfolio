@@ -1,5 +1,6 @@
 require "json"
 require "digest/sha1"
+require "net/http"
 require "net/smtp"
 require "securerandom"
 require "time"
@@ -255,6 +256,43 @@ def submit_contact(request)
   [{ "detail" => "Message sent." }, 201]
 rescue MailDeliveryError => error
   [{ "detail" => error.message }, 502]
+end
+
+def portfolio_assistant_reply(request)
+  payload = request_body(request)
+  intent = payload["intent"].to_s.strip
+  allowed_intents = ["A full-time role", "A project opportunity", "A collaboration"]
+  return [{ "detail" => "Choose a conversation topic." }, 400] unless allowed_intents.include?(intent)
+
+  api_key = ENV["GROQ_API_KEY"].to_s.strip
+  return [{ "detail" => "The assistant is not configured yet." }, 503] if api_key.empty?
+
+  prompt = <<~TEXT
+    You are Mani's portfolio assistant. A recruiter or collaborator selected: #{intent}.
+    Reply warmly and professionally in no more than two short sentences. Mani is a Python, Django, backend, and full-stack developer who also works with REST APIs, PostgreSQL, FastAPI, React, deployment, and AI-assisted development. Do not invent employers, years, achievements, availability, or rates. Invite them to share the next relevant detail.
+  TEXT
+  uri = URI("https://api.groq.com/openai/v1/chat/completions")
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
+  http.open_timeout = 3
+  http.read_timeout = 7
+  request_to_groq = Net::HTTP::Post.new(uri)
+  request_to_groq["Authorization"] = "Bearer #{api_key}"
+  request_to_groq["Content-Type"] = "application/json"
+  request_to_groq.body = JSON.generate({
+    model: "openai/gpt-oss-20b",
+    temperature: 0.35,
+    max_completion_tokens: 90,
+    messages: [{ role: "user", content: prompt }]
+  })
+  response = http.request(request_to_groq)
+  result = JSON.parse(response.body)
+  reply = result.dig("choices", 0, "message", "content").to_s.strip
+  return [{ "detail" => "The assistant could not respond right now." }, 502] unless response.is_a?(Net::HTTPSuccess) && !reply.empty?
+
+  [{ "reply" => reply[0, 500] }, 200]
+rescue JSON::ParserError, Net::OpenTimeout, Net::ReadTimeout, SocketError, OpenSSL::SSL::SSLError, EOFError, SystemCallError
+  [{ "detail" => "The assistant could not respond right now." }, 502]
 end
 
 def ensure_blog_table
@@ -520,6 +558,13 @@ Handler = proc do |request, response|
   elsif path == "/api/contact/submit/" || path == "/api/contact/submit"
     payload, status = with_database_retry { submit_contact(request) }
     json_response(response, payload, status)
+  elsif path == "/api/assistant/reply/" || path == "/api/assistant/reply"
+    if request.request_method == "POST"
+      payload, status = portfolio_assistant_reply(request)
+      json_response(response, payload, status)
+    else
+      json_response(response, { "detail" => "Method not allowed." }, 405)
+    end
   elsif path == "/blog-data/" || path == "/blog-data"
     if request.request_method == "GET"
       json_response(response, with_database_retry { { "items" => blog_posts } })
