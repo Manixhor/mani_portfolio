@@ -275,7 +275,7 @@ def portfolio_assistant_reply(request)
   http = Net::HTTP.new(uri.host, uri.port)
   http.use_ssl = true
   http.open_timeout = 3
-  http.read_timeout = 7
+  http.read_timeout = 20
   request_to_groq = Net::HTTP::Post.new(uri)
   request_to_groq["Authorization"] = "Bearer #{api_key}"
   request_to_groq["Content-Type"] = "application/json"
@@ -288,10 +288,14 @@ def portfolio_assistant_reply(request)
   response = http.request(request_to_groq)
   result = JSON.parse(response.body)
   reply = result.dig("choices", 0, "message", "content").to_s.strip
-  return [{ "detail" => "The assistant could not respond right now." }, 502] unless response.is_a?(Net::HTTPSuccess) && !reply.empty?
+  unless response.is_a?(Net::HTTPSuccess) && !reply.empty?
+    warn "Portfolio assistant request failed with HTTP #{response.code}"
+    return [{ "detail" => "The assistant could not respond right now." }, 502]
+  end
 
   [{ "reply" => reply[0, 500] }, 200]
-rescue JSON::ParserError, Net::OpenTimeout, Net::ReadTimeout, SocketError, OpenSSL::SSL::SSLError, EOFError, SystemCallError
+rescue JSON::ParserError, Net::OpenTimeout, Net::ReadTimeout, SocketError, OpenSSL::SSL::SSLError, EOFError, SystemCallError => error
+  warn "Portfolio assistant request failed: #{error.class}"
   [{ "detail" => "The assistant could not respond right now." }, 502]
 end
 
