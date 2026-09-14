@@ -217,6 +217,25 @@ def blog_posts
   end
 end
 
+def blog_post(post_id)
+  ensure_blog_table
+  post = database.exec_params(<<~SQL, [post_id]).first
+    SELECT id, image_url, video_url, header, subheader, description, created_at
+    FROM portfolio_blogpost WHERE id = $1
+  SQL
+  return nil unless post
+
+  {
+    "id" => post["id"].to_i,
+    "imageUrl" => post["image_url"].to_s,
+    "videoUrl" => post["video_url"].to_s,
+    "header" => post["header"].to_s,
+    "subheader" => post["subheader"].to_s,
+    "description" => post["description"].to_s,
+    "createdAt" => post["created_at"].to_s
+  }
+end
+
 def create_blog_post(request)
   authorization_error = blog_admin_error(request)
   return authorization_error if authorization_error
@@ -433,6 +452,13 @@ Handler = proc do |request, response|
     else
       json_response(response, { "detail" => "Method not allowed." }, 405)
     end
+  elsif path.match?(%r{\A/blog-data/\d+/?\z})
+    if request.request_method == "GET"
+      post = with_database_retry { blog_post(path[/\d+/].to_i) }
+      json_response(response, post || { "detail" => "Blog post not found." }, post ? 200 : 404)
+    else
+      json_response(response, { "detail" => "Method not allowed." }, 405)
+    end
   elsif path == "/blog-upload/" || path == "/blog-upload"
     if request.request_method == "POST"
       payload, status = create_blog_upload_signature(request)
@@ -454,6 +480,8 @@ Handler = proc do |request, response|
     static_file(response, File.join(FRONTEND, "index.html"))
   elsif path == "/blogs/" || path == "/blogs" || path == "/blogs/admin/" || path == "/blogs/admin"
     static_file(response, File.join(FRONTEND, "blogs.html"))
+  elsif path.match?(%r{\A/blogs/\d+/?\z})
+    static_file(response, File.join(FRONTEND, "blog-article.html"))
   elsif path == "/admin/" || path == "/admin"
     static_file(response, File.join(FRONTEND, "admin.html"))
   elsif path == "/sw.js"
@@ -462,6 +490,8 @@ Handler = proc do |request, response|
     static_file(response, File.join(FRONTEND, "js", "main.js"))
   elsif path == "/blogs.js"
     static_file(response, File.join(FRONTEND, "js", "blogs.js"))
+  elsif path == "/blog-article.js"
+    static_file(response, File.join(FRONTEND, "js", "blog-article.js"))
   elsif path == "/admin.js"
     static_file(response, File.join(FRONTEND, "js", "admin.js"))
   elsif path == "/manifest.webmanifest"

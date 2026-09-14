@@ -55,7 +55,11 @@ function renderPosts(items) {
     subheader.textContent = post.subheader || "";
     description.className = "blog-card__description";
     description.textContent = post.description || "";
-    body.append(header, subheader, description);
+    const link = document.createElement("a");
+    link.className = "blog-card__link";
+    link.href = `/blogs/${post.id}/`;
+    link.textContent = "Read article";
+    body.append(header, subheader, description, link);
     article.appendChild(body);
     blogGrid.appendChild(article);
   });
