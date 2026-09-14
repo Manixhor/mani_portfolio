@@ -513,15 +513,90 @@ function setContactStatus(message, type = "") {
 
 function setupContactForm() {
   const form = document.querySelector("[data-contact-form]");
-  if (!form) return;
+  const chat = document.querySelector("[data-contact-chat]");
+  const intro = document.querySelector("[data-chat-intro]");
+  const start = document.querySelector("[data-chat-start]");
+  const restart = document.querySelector("[data-chat-restart]");
+  const messages = document.querySelector("[data-chat-messages]");
+  const inputSlot = document.querySelector("[data-chat-input-slot]");
+  const inputLabel = document.querySelector("[data-chat-input-label]");
+  const submit = document.querySelector("[data-chat-submit]");
+  if (!form || !chat || !intro || !start || !messages || !inputSlot || !inputLabel || !submit) return;
+
+  const questions = [
+    { key: "name", prompt: "Hi. What should I call you?", autocomplete: "name" },
+    { key: "email", prompt: "What email should I reply to?", type: "email", autocomplete: "email" },
+    { key: "subject", prompt: "What would you like to discuss?", placeholder: "A role, project, or collaboration" },
+    { key: "message", prompt: "Tell me a little about it.", multiline: true },
+  ];
+  let answers = {};
+  let questionIndex = 0;
+
+  function addMessage(text, sender = "assistant") {
+    const message = document.createElement("p");
+    message.className = `contact-chat__message contact-chat__message--${sender}`;
+    message.textContent = text;
+    messages.appendChild(message);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function showQuestion(index) {
+    const question = questions[index];
+    if (!question) return;
+    addMessage(question.prompt);
+    inputSlot.innerHTML = "";
+    const field = document.createElement(question.multiline ? "textarea" : "input");
+    field.className = "contact-chat__input";
+    field.name = question.key;
+    field.required = true;
+    field.placeholder = question.placeholder || "Type your answer";
+    field.autocomplete = question.autocomplete || "off";
+    if (!question.multiline) field.type = question.type || "text";
+    if (question.multiline) field.rows = 3;
+    inputLabel.textContent = question.prompt;
+    inputSlot.appendChild(field);
+    submit.textContent = index === questions.length - 1 ? "Send" : "Next";
+    field.focus();
+  }
+
+  function beginConversation() {
+    answers = {};
+    questionIndex = 0;
+    messages.innerHTML = "";
+    inputSlot.innerHTML = "";
+    setContactStatus("");
+    chat.classList.add("is-active");
+    intro.remove();
+    form.hidden = false;
+    addMessage("Thanks for reaching out. I will keep this quick.");
+    window.setTimeout(() => showQuestion(questionIndex), 240);
+  }
+
+  start.addEventListener("click", beginConversation);
+  restart?.addEventListener("click", beginConversation);
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const submitButton = form.querySelector('button[type="submit"]');
-    const formData = new FormData(form);
-    const payload = Object.fromEntries(formData.entries());
+    const field = inputSlot.querySelector("input, textarea");
+    const value = field?.value.trim() || "";
+    if (!value) {
+      field?.focus();
+      return;
+    }
+    if (questions[questionIndex].key === "email" && !field.checkValidity()) {
+      field.focus();
+      return;
+    }
 
-    submitButton.disabled = true;
+    answers[questions[questionIndex].key] = value;
+    addMessage(value, "visitor");
+    questionIndex += 1;
+    if (questionIndex < questions.length) {
+      showQuestion(questionIndex);
+      return;
+    }
+
+    submit.disabled = true;
     setContactStatus("Sending...");
 
     try {
@@ -531,7 +606,7 @@ function setupContactForm() {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(answers),
       });
 
       if (!response.ok) {
@@ -550,13 +625,14 @@ function setupContactForm() {
         throw new Error(detail || "Message could not be sent.");
       }
 
-      form.reset();
-      setContactStatus("Message sent. I will get back to you soon.", "success");
+      inputSlot.innerHTML = "";
+      addMessage("Thank you. Your message is on its way. I will get back to you soon.");
+      setContactStatus("", "success");
     } catch (error) {
       console.error(error);
       setContactStatus(error.message || "Message failed. Please email me directly.", "error");
     } finally {
-      submitButton.disabled = false;
+      submit.disabled = false;
     }
   });
 }
@@ -565,7 +641,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=18").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=19").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });

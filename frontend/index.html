@@ -23,7 +23,7 @@
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/static/icons/icon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=13" />
+  <link rel="stylesheet" href="/static/css/style.css?v=17" />
 </head>
 <body>
   <div id="progress-bar" aria-hidden="true"></div>
@@ -102,33 +102,30 @@
 
         <div class="social-links" aria-label="Social links" data-render="social-links"></div>
 
-        <form class="contact-form" data-contact-form>
-          <div>
-            <label for="contact-name">Name</label>
-            <input id="contact-name" name="name" type="text" autocomplete="name" required />
-          </div>
-          <div>
-            <label for="contact-email">Email</label>
-            <input id="contact-email" name="email" type="email" autocomplete="email" required />
-          </div>
-          <div>
-            <label for="contact-subject">Subject</label>
-            <input id="contact-subject" name="subject" type="text" required />
-          </div>
-          <div>
-            <label for="contact-message">Message</label>
-            <textarea id="contact-message" name="message" rows="4" required></textarea>
-          </div>
-          <button type="submit">Send Message</button>
-          <p class="contact-form__status" data-contact-status aria-live="polite"></p>
-        </form>
       </div>
 
-      <div class="image-panel contact-image">
-        <img src="" alt="" loading="lazy" referrerpolicy="no-referrer" data-content="contact-image" />
-        <blockquote>
-          <span data-content="contact-quote"></span>
-        </blockquote>
+      <div class="contact-chat" data-contact-chat>
+        <div class="contact-chat__intro" data-chat-intro>
+          <p class="contact-chat__eyebrow">Let's make it count</p>
+          <h3>Have an opportunity in mind?</h3>
+          <p>Share a few details and I will get back to you.</p>
+          <button class="contact-chat__start" type="button" data-chat-start>Start a conversation <span aria-hidden="true">&#8594;</span></button>
+          <blockquote class="contact-chat__quote"><span data-content="contact-quote"></span></blockquote>
+        </div>
+
+        <form class="contact-chat__conversation" data-contact-form hidden>
+          <div class="contact-chat__bar">
+            <p><span aria-hidden="true"></span> Mani</p>
+            <button type="button" data-chat-restart>Start over</button>
+          </div>
+          <div class="contact-chat__messages" data-chat-messages role="log" aria-live="polite"></div>
+          <div class="contact-chat__composer">
+            <label class="sr-only" data-chat-input-label></label>
+            <div data-chat-input-slot></div>
+            <button type="submit" data-chat-submit>Next</button>
+          </div>
+          <p class="contact-chat__status" data-contact-status aria-live="polite"></p>
+        </form>
       </div>
     </section>
   </main>
@@ -149,6 +146,6 @@
     </section>
   </div>
 
-  <script src="/app.js?v=6"></script>
+  <script src="/app.js?v=10"></script>
 </body>
 </html>
