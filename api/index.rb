@@ -221,6 +221,22 @@ rescue StandardError => error
   raise MailDeliveryError, "Email delivery failed. Please try again or email me directly."
 end
 
+def ensure_contact_id_sequence
+  return if @contact_id_sequence_ready
+
+  default = database.exec_params(<<~SQL, ["contact_contactmessage", "id"]).first
+    SELECT column_default
+    FROM information_schema.columns
+    WHERE table_schema = current_schema() AND table_name = $1 AND column_name = $2
+  SQL
+  return @contact_id_sequence_ready = true if default && default["column_default"].to_s.include?("nextval")
+
+  database.exec("CREATE SEQUENCE IF NOT EXISTS contact_contactmessage_id_seq")
+  database.exec("ALTER TABLE contact_contactmessage ALTER COLUMN id SET DEFAULT nextval('contact_contactmessage_id_seq'::regclass)")
+  database.exec("SELECT setval('contact_contactmessage_id_seq', COALESCE((SELECT MAX(id) FROM contact_contactmessage), 0) + 1, false)")
+  @contact_id_sequence_ready = true
+end
+
 def submit_contact(request)
   payload = request_body(request)
   name = payload["name"].to_s.strip
@@ -230,6 +246,7 @@ def submit_contact(request)
   return [{ "detail" => "All contact fields are required." }, 400] if [name, email, subject, message].any?(&:empty?)
 
   notify_contact_message(name:, email:, subject:, message:)
+  ensure_contact_id_sequence
   database.exec_params(
     "INSERT INTO contact_contactmessage (name, email, subject, message, created_at, is_read) VALUES ($1, $2, $3, $4, NOW(), FALSE)",
     [name, email, subject, message]
