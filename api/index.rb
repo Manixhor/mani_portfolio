@@ -452,6 +452,24 @@ def replace_admin_collection(table, columns, items)
   end
 end
 
+def ensure_admin_text_columns
+  return if @admin_text_columns_ready
+
+  editable_columns = {
+    "portfolio_data_experienceitem" => %w[role company period points],
+    "portfolio_data_skillitem" => %w[name icon],
+    "portfolio_data_projectitem" => %w[name description brief stack live_url github_url blog_url image_url image_alt],
+    "portfolio_data_certificationitem" => %w[title issuer issued_date credential_url description image_url image_alt]
+  }
+
+  editable_columns.each do |table, columns|
+    columns.each do |column|
+      database.exec("ALTER TABLE #{table} ALTER COLUMN \"#{column}\" TYPE TEXT")
+    end
+  end
+  @admin_text_columns_ready = true
+end
+
 def save_portfolio_admin_data(request)
   authorization_error = portfolio_admin_error(request)
   return authorization_error if authorization_error
@@ -462,6 +480,7 @@ def save_portfolio_admin_data(request)
   return [{ "detail" => "Invalid admin content payload." }, 400] unless config.is_a?(Hash) && collections.is_a?(Hash)
 
   ensure_project_blog_column
+  ensure_admin_text_columns
   database.transaction do |connection|
     connection.exec_params(
       "UPDATE portfolio_data_portfolioconfig SET hero = $1::jsonb, about = $2::jsonb, experience = $3::jsonb, skills = $4::jsonb, projects = $5::jsonb, contact = $6::jsonb, footer = $7::jsonb, notification_emails = $8, updated_at = NOW() WHERE id = 1",
