@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css?v=11" />
+  <link rel="stylesheet" href="/static/css/style.css?v=19" />
 </head>
 <body class="blog-page article-page">
   <main class="portfolio-shell">
@@ -32,6 +32,14 @@
       <div class="article-body" data-article-body></div>
     </article>
   </main>
+  <aside class="chatbot-widget" data-chatbot aria-label="Contact assistant">
+    <button class="chatbot-widget__launcher" type="button" data-chatbot-open><span class="chatbot-widget__signal" aria-hidden="true"></span>Start a conversation</button>
+    <section class="chatbot-widget__window" data-chatbot-window hidden>
+      <header><div><p>Mani's assistant</p><span>Available to talk</span></div><button type="button" data-chatbot-close aria-label="Close assistant">&times;</button></header>
+      <form data-chatbot-form><div class="chatbot-widget__messages" data-chatbot-messages role="log" aria-live="polite"></div><div class="chatbot-widget__choices" data-chatbot-choices></div><label class="sr-only" data-chatbot-input-label></label><div class="chatbot-widget__composer"><div data-chatbot-input-slot></div><button type="submit" data-chatbot-submit hidden>Next</button></div><p class="chatbot-widget__status" data-chatbot-status aria-live="polite"></p></form>
+    </section>
+  </aside>
   <script src="/blog-article.js?v=1"></script>
+  <script src="/chat-widget.js?v=1"></script>
 </body>
 </html>

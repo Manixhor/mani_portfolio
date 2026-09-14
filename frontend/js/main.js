@@ -527,7 +527,7 @@ function setupContactForm() {
     { key: "name", prompt: "Hi. What should I call you?", autocomplete: "name" },
     { key: "email", prompt: "What email should I reply to?", type: "email", autocomplete: "email" },
     { key: "subject", prompt: "What would you like to discuss?", placeholder: "A role, project, or collaboration" },
-    { key: "message", prompt: "Tell me a little about it.", multiline: true },
+    { key: "message", prompt: "What would you like me to know?", multiline: true },
   ];
   let answers = {};
   let questionIndex = 0;
@@ -641,7 +641,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=19").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=21").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });

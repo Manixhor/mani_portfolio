@@ -1,0 +1,130 @@
+const chatbot = document.querySelector("[data-chatbot]");
+
+if (chatbot) {
+  const launcher = chatbot.querySelector("[data-chatbot-open]");
+  const windowPanel = chatbot.querySelector("[data-chatbot-window]");
+  const closeButton = chatbot.querySelector("[data-chatbot-close]");
+  const form = chatbot.querySelector("[data-chatbot-form]");
+  const messages = chatbot.querySelector("[data-chatbot-messages]");
+  const choices = chatbot.querySelector("[data-chatbot-choices]");
+  const inputSlot = chatbot.querySelector("[data-chatbot-input-slot]");
+  const inputLabel = chatbot.querySelector("[data-chatbot-input-label]");
+  const submit = chatbot.querySelector("[data-chatbot-submit]");
+  const status = chatbot.querySelector("[data-chatbot-status]");
+  const questions = [
+    { key: "subject", prompt: "What brings you here?", options: ["A full-time role", "A project opportunity", "A collaboration"] },
+    { key: "name", prompt: "What should I call you?", autocomplete: "name" },
+    { key: "email", prompt: "Where can Mani reply?", type: "email", autocomplete: "email" },
+    { key: "message", prompt: "What would you like Mani to know?", multiline: true },
+  ];
+  let answers = {};
+  let index = 0;
+
+  function setStatus(message = "", isError = false) {
+    status.textContent = message;
+    status.classList.toggle("is-error", isError);
+  }
+
+  function addMessage(text, author = "assistant") {
+    const bubble = document.createElement("p");
+    bubble.className = `chatbot-widget__message chatbot-widget__message--${author}`;
+    bubble.textContent = text;
+    messages.appendChild(bubble);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function submitAnswer(value) {
+    const question = questions[index];
+    if (!value) return;
+    answers[question.key] = value;
+    addMessage(value, "visitor");
+    index += 1;
+    showQuestion();
+  }
+
+  function showQuestion() {
+    choices.innerHTML = "";
+    inputSlot.innerHTML = "";
+    const question = questions[index];
+
+    if (!question) {
+      sendMessage();
+      return;
+    }
+
+    addMessage(question.prompt);
+    if (question.options) {
+      question.options.forEach((option) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = option;
+        button.addEventListener("click", () => submitAnswer(option));
+        choices.appendChild(button);
+      });
+      return;
+    }
+
+    const field = document.createElement(question.multiline ? "textarea" : "input");
+    field.className = "chatbot-widget__input";
+    field.name = question.key;
+    field.required = true;
+    field.placeholder = "Type your answer";
+    field.autocomplete = question.autocomplete || "off";
+    if (!question.multiline) field.type = question.type || "text";
+    if (question.multiline) field.rows = 3;
+    inputLabel.textContent = question.prompt;
+    inputSlot.appendChild(field);
+    submit.hidden = false;
+    submit.textContent = index === questions.length - 1 ? "Send" : "Next";
+    field.focus();
+  }
+
+  function startConversation() {
+    answers = {};
+    index = 0;
+    messages.innerHTML = "";
+    choices.innerHTML = "";
+    inputSlot.innerHTML = "";
+    submit.hidden = true;
+    setStatus();
+    chatbot.classList.add("is-open");
+    launcher.hidden = true;
+    windowPanel.hidden = false;
+    addMessage("Hi, I am Mani's portfolio assistant.");
+    window.setTimeout(showQuestion, 220);
+  }
+
+  async function sendMessage() {
+    submit.hidden = true;
+    setStatus("Sending...");
+    try {
+      const response = await fetch("/api/contact/submit/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(answers),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Message could not be sent.");
+      setStatus();
+      addMessage("Thank you. Mani will get back to you soon.");
+    } catch (error) {
+      setStatus(error.message || "Message failed. Please email Mani directly.", true);
+    }
+  }
+
+  launcher.addEventListener("click", startConversation);
+  closeButton.addEventListener("click", () => {
+    chatbot.classList.remove("is-open");
+    windowPanel.hidden = true;
+    launcher.hidden = false;
+  });
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const field = inputSlot.querySelector("input, textarea");
+    const value = field?.value.trim() || "";
+    if (!value) return field?.focus();
+    if (field.type === "email" && !field.checkValidity()) return field.focus();
+    submitAnswer(value);
+  });
+}

@@ -23,7 +23,7 @@
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/static/icons/icon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=17" />
+  <link rel="stylesheet" href="/static/css/style.css?v=19" />
 </head>
 <body>
   <div id="progress-bar" aria-hidden="true"></div>
@@ -146,6 +146,21 @@
     </section>
   </div>
 
-  <script src="/app.js?v=10"></script>
+  <aside class="chatbot-widget" data-chatbot aria-label="Contact assistant">
+    <button class="chatbot-widget__launcher" type="button" data-chatbot-open><span class="chatbot-widget__signal" aria-hidden="true"></span>Start a conversation</button>
+    <section class="chatbot-widget__window" data-chatbot-window hidden>
+      <header><div><p>Mani's assistant</p><span>Available to talk</span></div><button type="button" data-chatbot-close aria-label="Close assistant">&times;</button></header>
+      <form data-chatbot-form>
+        <div class="chatbot-widget__messages" data-chatbot-messages role="log" aria-live="polite"></div>
+        <div class="chatbot-widget__choices" data-chatbot-choices></div>
+        <label class="sr-only" data-chatbot-input-label></label>
+        <div class="chatbot-widget__composer"><div data-chatbot-input-slot></div><button type="submit" data-chatbot-submit hidden>Next</button></div>
+        <p class="chatbot-widget__status" data-chatbot-status aria-live="polite"></p>
+      </form>
+    </section>
+  </aside>
+
+  <script src="/app.js?v=11"></script>
+  <script src="/chat-widget.js?v=1"></script>
 </body>
 </html>

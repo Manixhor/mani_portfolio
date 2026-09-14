@@ -569,6 +569,8 @@ Handler = proc do |request, response|
     static_file(response, File.join(FRONTEND, "js", "blogs.js"))
   elsif path == "/blog-article.js"
     static_file(response, File.join(FRONTEND, "js", "blog-article.js"))
+  elsif path == "/chat-widget.js"
+    static_file(response, File.join(FRONTEND, "js", "chat-widget.js"))
   elsif path == "/admin.js"
     static_file(response, File.join(FRONTEND, "js", "admin.js"))
   elsif path == "/manifest.webmanifest"
