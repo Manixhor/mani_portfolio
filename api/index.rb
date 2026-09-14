@@ -1,5 +1,6 @@
 require "json"
 require "digest/sha1"
+require "net/smtp"
 require "securerandom"
 require "time"
 require "uri"
@@ -164,6 +165,62 @@ rescue JSON::ParserError
   {}
 end
 
+class MailDeliveryError < StandardError; end
+
+def mail_header(value)
+  value.to_s.gsub(/[\r\n]+/, " ").strip
+end
+
+def gmail_smtp_config
+  username = ENV["SMTP_USERNAME"].to_s.strip
+  password = ENV["SMTP_PASSWORD"].to_s.gsub(/\s+/, "")
+  recipient = ENV.fetch("CONTACT_NOTIFICATION_EMAIL", username).to_s.strip
+  from = ENV.fetch("SMTP_FROM", username).to_s.strip
+
+  missing = []
+  missing << "SMTP_USERNAME" if username.empty?
+  missing << "SMTP_PASSWORD" if password.empty?
+  missing << "CONTACT_NOTIFICATION_EMAIL" if recipient.empty?
+  raise MailDeliveryError, "Email is not configured. Missing: #{missing.join(', ')}." unless missing.empty?
+
+  { username:, password:, recipient:, from: }
+end
+
+def notify_contact_message(name:, email:, subject:, message:)
+  config = gmail_smtp_config
+  from_email = config[:username]
+  body = <<~TEXT
+    New portfolio contact message
+
+    From: #{name} <#{email}>
+    Subject: #{subject}
+
+    #{message}
+  TEXT
+  mail = <<~MAIL
+    From: #{mail_header(config[:from])}
+    To: #{mail_header(config[:recipient])}
+    Reply-To: #{mail_header(email)}
+    Subject: #{mail_header(subject)}
+    MIME-Version: 1.0
+    Content-Type: text/plain; charset=UTF-8
+    Content-Transfer-Encoding: 8bit
+
+    #{body}
+  MAIL
+
+  smtp = Net::SMTP.new(ENV.fetch("SMTP_HOST", "smtp.gmail.com"), Integer(ENV.fetch("SMTP_PORT", "587")))
+  smtp.enable_starttls_auto
+  smtp.start("gmail.com", config[:username], config[:password], :plain) do |client|
+    client.send_message(mail, from_email, config[:recipient])
+  end
+rescue MailDeliveryError
+  raise
+rescue StandardError => error
+  warn "Contact email delivery failed: #{error.class}"
+  raise MailDeliveryError, "Email delivery failed. Please try again or email me directly."
+end
+
 def submit_contact(request)
   payload = request_body(request)
   name = payload["name"].to_s.strip
@@ -172,12 +229,15 @@ def submit_contact(request)
   message = payload["message"].to_s.strip
   return [{ "detail" => "All contact fields are required." }, 400] if [name, email, subject, message].any?(&:empty?)
 
+  notify_contact_message(name:, email:, subject:, message:)
   database.exec_params(
     "INSERT INTO contact_contactmessage (name, email, subject, message, created_at, is_read) VALUES ($1, $2, $3, $4, NOW(), FALSE)",
     [name, email, subject, message]
   )
 
   [{ "detail" => "Message sent." }, 201]
+rescue MailDeliveryError => error
+  [{ "detail" => error.message }, 502]
 end
 
 def ensure_blog_table
