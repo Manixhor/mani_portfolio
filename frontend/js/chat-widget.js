@@ -20,6 +20,29 @@ if (chatbot) {
   let answers = {};
   let index = 0;
 
+  function closeConversation() {
+    chatbot.classList.remove("is-open");
+    windowPanel.hidden = true;
+    launcher.hidden = false;
+  }
+
+  function revealAfterAbout() {
+    const about = document.querySelector("#about");
+    if (!about) {
+      chatbot.classList.add("is-visible");
+      return;
+    }
+
+    const reveal = () => {
+      if (window.scrollY + window.innerHeight < about.offsetTop + about.offsetHeight) return;
+      chatbot.classList.add("is-visible");
+      window.removeEventListener("scroll", reveal);
+    };
+
+    reveal();
+    window.addEventListener("scroll", reveal, { passive: true });
+  }
+
   function setStatus(message = "", isError = false) {
     status.textContent = message;
     status.classList.toggle("is-error", isError);
@@ -124,17 +147,14 @@ if (chatbot) {
       if (!response.ok) throw new Error(data.detail || "Message could not be sent.");
       setStatus();
       addMessage("Thank you. Mani will get back to you soon.");
+      window.setTimeout(closeConversation, 1800);
     } catch (error) {
       setStatus(error.message || "Message failed. Please email Mani directly.", true);
     }
   }
 
   launcher.addEventListener("click", startConversation);
-  closeButton.addEventListener("click", () => {
-    chatbot.classList.remove("is-open");
-    windowPanel.hidden = true;
-    launcher.hidden = false;
-  });
+  closeButton.addEventListener("click", closeConversation);
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -144,4 +164,6 @@ if (chatbot) {
     if (field.type === "email" && !field.checkValidity()) return field.focus();
     submitAnswer(value);
   });
+
+  revealAfterAbout();
 }

@@ -20,6 +20,8 @@ DEFAULT_CERTIFICATION_IMAGE_URL = "https://images.unsplash.com/photo-14340302164
 def json_response(response, payload, status = 200)
   response.status = status
   response["Content-Type"] = "application/json; charset=utf-8"
+  response["Cache-Control"] = "no-store, max-age=0, must-revalidate"
+  response["Pragma"] = "no-cache"
   response["Access-Control-Allow-Origin"] = ENV.fetch("CORS_ALLOWED_ORIGINS", "*").split(",").first.strip
   response["Access-Control-Allow-Headers"] = "Content-Type, Accept, X-Blog-Admin-Password, X-Portfolio-Admin-Password"
   response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"

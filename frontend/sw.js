@@ -1,8 +1,8 @@
-const CACHE_NAME = "mani-portfolio-v21";
+const CACHE_NAME = "mani-portfolio-v22";
 const APP_SHELL = [
   "/",
-  "/static/css/style.css?v=19",
-  "/app.js?v=11",
+  "/static/css/style.css?v=20",
+  "/app.js?v=12",
   "/manifest.webmanifest",
   "/static/icons/icon.svg"
 ];
@@ -56,13 +56,12 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request).then((response) => {
+    fetch(request)
+      .then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
         return response;
-      });
-    })
+      })
+      .catch(() => caches.match(request))
   );
 });

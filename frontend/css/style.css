@@ -1431,6 +1431,18 @@ a {
   right: 24px;
   bottom: 24px;
   z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 220ms ease, transform 220ms ease;
+  visibility: hidden;
+}
+
+.chatbot-widget.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
 }
 
 .chatbot-widget__launcher {
