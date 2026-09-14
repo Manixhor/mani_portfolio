@@ -1158,6 +1158,8 @@ a {
 }
 
 .contact-panel {
+  grid-template-columns: minmax(0, 720px);
+  min-height: 0;
   border-bottom: 0;
 }
 
