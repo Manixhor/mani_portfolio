@@ -282,7 +282,8 @@ def portfolio_assistant_reply(request)
   request_to_groq.body = JSON.generate({
     model: "openai/gpt-oss-20b",
     temperature: 0.35,
-    max_completion_tokens: 90,
+    max_completion_tokens: 180,
+    reasoning_effort: "low",
     messages: [{ role: "user", content: prompt }]
   })
   response = http.request(request_to_groq)
