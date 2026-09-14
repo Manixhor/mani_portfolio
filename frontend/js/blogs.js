@@ -17,6 +17,16 @@ function setStatus(message, isError = false) {
   blogStatus.classList.toggle("is-error", isError);
 }
 
+function formatDate(value) {
+  if (!value) return "Article";
+  return new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value));
+}
+
+function excerpt(value) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  return text.length > 220 ? `${text.slice(0, 217).trimEnd()}...` : text;
+}
+
 function renderPosts(items) {
   if (!blogGrid) return;
   blogGrid.innerHTML = "";
@@ -29,6 +39,9 @@ function renderPosts(items) {
   items.forEach((post) => {
     const article = document.createElement("article");
     article.className = "blog-card";
+    const link = document.createElement("a");
+    link.className = "blog-card__surface";
+    link.href = `/blogs/${post.id}/`;
 
     if (post.imageUrl) {
       const image = document.createElement("img");
@@ -36,31 +49,34 @@ function renderPosts(items) {
       image.alt = post.header || "Blog image";
       image.loading = "lazy";
       image.addEventListener("error", () => image.remove());
-      article.appendChild(image);
+      link.appendChild(image);
     } else if (post.videoUrl) {
       const video = document.createElement("video");
       video.src = post.videoUrl;
-      video.controls = true;
+      video.muted = true;
       video.preload = "metadata";
       video.playsInline = true;
-      article.appendChild(video);
+      link.appendChild(video);
     }
 
     const body = document.createElement("div");
+    const meta = document.createElement("p");
     const header = document.createElement("h2");
     const subheader = document.createElement("p");
     const description = document.createElement("p");
+    meta.className = "blog-card__meta";
+    meta.textContent = formatDate(post.createdAt);
     header.textContent = post.header || "Untitled";
     subheader.className = "blog-card__subheader";
     subheader.textContent = post.subheader || "";
     description.className = "blog-card__description";
-    description.textContent = post.description || "";
-    const link = document.createElement("a");
-    link.className = "blog-card__link";
-    link.href = `/blogs/${post.id}/`;
-    link.textContent = "Read article";
-    body.append(header, subheader, description, link);
-    article.appendChild(body);
+    description.textContent = excerpt(post.description);
+    const readingCue = document.createElement("span");
+    readingCue.className = "blog-card__link";
+    readingCue.textContent = "Read article";
+    body.append(meta, header, subheader, description, readingCue);
+    link.appendChild(body);
+    article.appendChild(link);
     blogGrid.appendChild(article);
   });
 }
