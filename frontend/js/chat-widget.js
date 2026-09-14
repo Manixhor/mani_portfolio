@@ -155,6 +155,9 @@ if (chatbot) {
 
   launcher.addEventListener("click", startConversation);
   closeButton.addEventListener("click", closeConversation);
+  document.querySelectorAll("[data-chatbot-start]").forEach((button) => {
+    button.addEventListener("click", startConversation);
+  });
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
