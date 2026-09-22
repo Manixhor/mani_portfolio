@@ -589,7 +589,8 @@ a {
   background: #f3f3f1;
 }
 
-.project-card img {
+.project-card img,
+.project-card video {
   display: block;
   width: 100%;
   height: 100%;
@@ -609,7 +610,8 @@ a {
   text-transform: uppercase;
 }
 
-.project-media.is-unavailable img {
+.project-media.is-unavailable img,
+.project-media.is-unavailable video {
   display: none;
 }
 

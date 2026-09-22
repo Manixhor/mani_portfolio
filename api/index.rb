@@ -123,7 +123,7 @@ def portfolio_config
 
   projects = json_value(config["projects"])
   projects["items"] = database.exec(<<~SQL).map do |item|
-    SELECT name, description, brief, stack, live_url, show_live_url, github_url, show_github_url, blog_url, image, image_url, image_alt
+    SELECT name, description, brief, stack, live_url, show_live_url, github_url, show_github_url, blog_url, image, image_url, video_url, image_alt
     FROM portfolio_data_projectitem
     WHERE is_visible = TRUE
     ORDER BY "order" ASC, id DESC
@@ -137,6 +137,7 @@ def portfolio_config
       "githubUrl" => item["show_github_url"] == "t" ? item["github_url"].to_s : "",
       "blogUrl" => item["blog_url"].to_s,
       "imageUrl" => image_url(item["image"]) || image_url(item["image_url"]) || "",
+      "videoUrl" => item["video_url"].to_s,
       "imageAlt" => item["image_alt"].to_s
     }
   end
@@ -158,6 +159,7 @@ def ensure_project_blog_column
   return if @project_blog_column_ready
 
   database.exec("ALTER TABLE portfolio_data_projectitem ADD COLUMN IF NOT EXISTS blog_url TEXT NOT NULL DEFAULT ''")
+  database.exec("ALTER TABLE portfolio_data_projectitem ADD COLUMN IF NOT EXISTS video_url TEXT NOT NULL DEFAULT ''")
   @project_blog_column_ready = true
 end
 
@@ -425,7 +427,7 @@ def portfolio_admin_data(request)
   collections = {
     "experience" => database.exec('SELECT id, role, company, period, points, "order", is_visible FROM portfolio_data_experienceitem ORDER BY "order", id').to_a,
     "skills" => database.exec('SELECT id, name, icon, "order", is_visible FROM portfolio_data_skillitem ORDER BY "order", id').to_a,
-    "projects" => database.exec('SELECT id, name, description, brief, stack, live_url, show_live_url, github_url, show_github_url, blog_url, image_url, image_alt, "order", is_visible FROM portfolio_data_projectitem ORDER BY "order", id').to_a,
+    "projects" => database.exec('SELECT id, name, description, brief, stack, live_url, show_live_url, github_url, show_github_url, blog_url, image_url, video_url, image_alt, "order", is_visible FROM portfolio_data_projectitem ORDER BY "order", id').to_a,
     "certifications" => database.exec('SELECT id, title, issuer, issued_date, credential_url, description, image_url, image_alt, "order", is_visible FROM portfolio_data_certificationitem ORDER BY "order", id').to_a
   }
   [{
@@ -458,7 +460,7 @@ def ensure_admin_text_columns
   editable_columns = {
     "portfolio_data_experienceitem" => %w[role company period points],
     "portfolio_data_skillitem" => %w[name icon],
-    "portfolio_data_projectitem" => %w[name description brief stack live_url github_url blog_url image_url image_alt],
+    "portfolio_data_projectitem" => %w[name description brief stack live_url github_url blog_url image_url video_url image_alt],
     "portfolio_data_certificationitem" => %w[title issuer issued_date credential_url description image_url image_alt]
   }
 
@@ -488,7 +490,7 @@ def save_portfolio_admin_data(request)
     )
     replace_admin_collection("portfolio_data_experienceitem", %w[role company period points order is_visible], Array(collections["experience"]))
     replace_admin_collection("portfolio_data_skillitem", %w[name icon order is_visible], Array(collections["skills"]))
-    replace_admin_collection("portfolio_data_projectitem", %w[name description brief stack live_url show_live_url github_url show_github_url blog_url image_url image_alt order is_visible], Array(collections["projects"]))
+    replace_admin_collection("portfolio_data_projectitem", %w[name description brief stack live_url show_live_url github_url show_github_url blog_url image_url video_url image_alt order is_visible], Array(collections["projects"]))
     replace_admin_collection("portfolio_data_certificationitem", %w[title issuer issued_date credential_url description image_url image_alt order is_visible], Array(collections["certifications"]))
   end
   [{ "detail" => "Portfolio content saved." }, 200]
@@ -518,7 +520,19 @@ def create_blog_upload_signature(request)
   return authorization_error if authorization_error
 
   payload = request_body(request)
-  content_type = payload["contentType"].to_s
+  media_upload_signature(payload["contentType"], "blogs")
+end
+
+def create_project_upload_signature(request)
+  authorization_error = portfolio_admin_error(request)
+  return authorization_error if authorization_error
+
+  payload = request_body(request)
+  media_upload_signature(payload["contentType"], "projects")
+end
+
+def media_upload_signature(content_type, folder)
+  content_type = content_type.to_s
   image_types = %w[image/jpeg image/png image/webp image/avif]
   video_types = %w[video/mp4 video/webm video/quicktime]
   resource_type = image_types.include?(content_type) ? "image" : "video"
@@ -529,7 +543,7 @@ def create_blog_upload_signature(request)
   return [{ "detail" => "Media uploads are not configured." }, 503] unless cloud_name
 
   timestamp = Time.now.to_i.to_s
-  public_id = "mani_portfolio/blogs/#{SecureRandom.uuid}"
+  public_id = "mani_portfolio/#{folder}/#{SecureRandom.uuid}"
   signature_source = "allowed_formats=#{allowed_formats}&public_id=#{public_id}&timestamp=#{timestamp}#{api_secret}"
   signature = Digest::SHA1.hexdigest(signature_source)
 
@@ -610,6 +624,13 @@ Handler = proc do |request, response|
   elsif path == "/blog-upload/" || path == "/blog-upload"
     if request.request_method == "POST"
       payload, status = create_blog_upload_signature(request)
+      json_response(response, payload, status)
+    else
+      json_response(response, { "detail" => "Method not allowed." }, 405)
+    end
+  elsif path == "/project-upload/" || path == "/project-upload"
+    if request.request_method == "POST"
+      payload, status = create_project_upload_signature(request)
       json_response(response, payload, status)
     else
       json_response(response, { "detail" => "Method not allowed." }, 405)

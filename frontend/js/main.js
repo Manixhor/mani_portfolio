@@ -329,7 +329,6 @@ function renderProjects(projects = {}) {
     article.className = "project-card";
     article.innerHTML = `
       <div class="project-media">
-        <img loading="lazy" referrerpolicy="no-referrer" />
         <span class="project-media-fallback" aria-hidden="true">Preview unavailable</span>
       </div>
       <div class="project-card-content">
@@ -341,12 +340,23 @@ function renderProjects(projects = {}) {
     `;
 
     const media = article.querySelector(".project-media");
-    const image = article.querySelector("img");
-    image.src = project.imageUrl || "";
-    image.alt = plainText(project.imageAlt) || `${plainText(project.name) || "Project"} preview`;
-    image.addEventListener("error", () => {
+    const mediaElement = document.createElement(project.videoUrl ? "video" : "img");
+    if (project.videoUrl) {
+      mediaElement.src = project.videoUrl;
+      mediaElement.controls = true;
+      mediaElement.muted = true;
+      mediaElement.playsInline = true;
+      mediaElement.preload = "metadata";
+    } else {
+      mediaElement.loading = "lazy";
+      mediaElement.referrerPolicy = "no-referrer";
+      mediaElement.src = project.imageUrl || "";
+      mediaElement.alt = plainText(project.imageAlt) || `${plainText(project.name) || "Project"} preview`;
+    }
+    mediaElement.addEventListener("error", () => {
       media.classList.add("is-unavailable");
     });
+    media.prepend(mediaElement);
     article.querySelector("h3").textContent = plainText(project.name);
     article.querySelector("p").textContent = plainText(project.description);
     article.querySelector(".project-card-content span").textContent = plainText(stack);
@@ -641,7 +651,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=23").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=24").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });

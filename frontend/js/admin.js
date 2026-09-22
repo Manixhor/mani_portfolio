@@ -9,7 +9,7 @@ let portfolioConfig = {};
 const fields = {
   experience: [["role", "Role"], ["company", "Company"], ["period", "Period"], ["points", "Highlights", "textarea"], ["order", "Order", "number"], ["is_visible", "Visible", "checkbox"]],
   skills: [["name", "Skill name"], ["icon", "Icon class or text:LABEL"], ["order", "Order", "number"], ["is_visible", "Visible", "checkbox"]],
-  projects: [["name", "Project name"], ["description", "Description", "textarea"], ["brief", "Project brief", "textarea"], ["stack", "Tech stack"], ["live_url", "Live link", "url"], ["show_live_url", "Show live link", "checkbox"], ["github_url", "GitHub link", "url"], ["show_github_url", "Show GitHub link", "checkbox"], ["blog_url", "Blog link", "url"], ["image_url", "Image URL", "url"], ["image_alt", "Image alt text"], ["order", "Order", "number"], ["is_visible", "Visible", "checkbox"]],
+  projects: [["name", "Project name"], ["description", "Description", "textarea"], ["brief", "Project brief", "textarea"], ["stack", "Tech stack"], ["live_url", "Live link", "url"], ["show_live_url", "Show live link", "checkbox"], ["github_url", "GitHub link", "url"], ["show_github_url", "Show GitHub link", "checkbox"], ["blog_url", "Blog link", "url"], ["image_url", "Image URL", "url"], ["video_url", "Video URL", "url"], ["image_alt", "Image alt text"], ["order", "Order", "number"], ["is_visible", "Visible", "checkbox"]],
   certifications: [["title", "Title"], ["issuer", "Issuer"], ["issued_date", "Issued date"], ["credential_url", "Credential link", "url"], ["description", "Description", "textarea"], ["image_url", "Image URL", "url"], ["image_alt", "Image alt text"], ["order", "Order", "number"], ["is_visible", "Visible", "checkbox"]],
 };
 const blankItems = Object.fromEntries(Object.entries(fields).map(([name, definitions]) => [name, Object.fromEntries(definitions.map(([key, , type]) => [key, type === "checkbox" ? true : type === "number" ? 0 : ""]))]));
@@ -44,8 +44,23 @@ function renderCollection(name, items) {
       const control = type === "textarea" ? document.createElement("textarea") : document.createElement("input");
       control.dataset.field = key; if (type === "checkbox") { control.type = "checkbox"; control.checked = item[key] === true || item[key] === "t"; } else { control.type = type; control.value = item[key] ?? ""; } field.appendChild(control); card.appendChild(field);
     });
+    if (name === "projects") renderProjectMediaUpload(card);
     container.appendChild(card);
   });
+}
+
+function renderProjectMediaUpload(card) {
+  const field = document.createElement("label");
+  field.textContent = "Upload project image or video";
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm,video/quicktime";
+  input.dataset.projectMedia = "";
+  const helper = document.createElement("small");
+  helper.dataset.projectMediaStatus = "";
+  helper.textContent = "Choose one file. Uploading replaces the current image or video URL.";
+  field.append(input, helper);
+  card.appendChild(field);
 }
 
 function collectionValues(name) {
@@ -53,6 +68,45 @@ function collectionValues(name) {
     const item = {}; if (card.dataset.id) item.id = Number(card.dataset.id);
     fields[name].forEach(([key, , type = "text"]) => { const control = card.querySelector(`[data-field="${key}"]`); item[key] = type === "checkbox" ? control.checked : type === "number" ? Number(control.value || 0) : control.value.trim(); }); return item;
   });
+}
+
+async function uploadProjectMedia() {
+  const projectCards = document.querySelectorAll('[data-admin-item="projects"]');
+  for (const card of projectCards) {
+    const input = card.querySelector("[data-project-media]");
+    const media = input?.files?.[0];
+    if (!media) continue;
+
+    const isVideo = media.type.startsWith("video/");
+    const maxBytes = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (media.size > maxBytes) throw new Error(`${isVideo ? "Video" : "Image"} must be ${maxBytes / 1024 / 1024} MB or smaller.`);
+
+    const helper = card.querySelector("[data-project-media-status]");
+    if (helper) helper.textContent = "Preparing upload...";
+    const signatureResponse = await fetch("/project-upload/", {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify({ contentType: media.type }),
+    });
+    const signatureData = await signatureResponse.json();
+    if (!signatureResponse.ok) throw new Error(signatureData.detail || "Project upload could not be prepared.");
+
+    if (helper) helper.textContent = "Uploading media...";
+    const form = new FormData();
+    form.append("file", media);
+    form.append("public_id", signatureData.publicId);
+    form.append("timestamp", signatureData.timestamp);
+    form.append("api_key", signatureData.apiKey);
+    form.append("signature", signatureData.signature);
+    form.append("allowed_formats", signatureData.allowedFormats);
+    const uploadResponse = await fetch(signatureData.uploadUrl, { method: "POST", body: form });
+    const uploadData = await uploadResponse.json();
+    if (!uploadResponse.ok) throw new Error(uploadData.error?.message || "Project media could not be uploaded.");
+
+    card.querySelector('[data-field="image_url"]').value = signatureData.resourceType === "image" ? uploadData.secure_url : "";
+    card.querySelector('[data-field="video_url"]').value = signatureData.resourceType === "video" ? uploadData.secure_url : "";
+    if (helper) helper.textContent = "Upload ready. Save all changes to publish it.";
+  }
 }
 
 async function loadAdmin() {
@@ -63,5 +117,5 @@ async function loadAdmin() {
 document.querySelector("[data-admin-login-form]").addEventListener("submit", async (event) => { event.preventDefault(); adminPassword = passwordInput.value; try { await loadAdmin(); login.hidden = true; dashboard.hidden = false; } catch (error) { adminPassword = ""; setMessage(loginStatus, error.message, true); } });
 document.querySelectorAll("[data-admin-add]").forEach((button) => button.addEventListener("click", () => { const name = button.dataset.adminAdd; renderCollection(name, [...collectionValues(name), { ...blankItems[name], order: collectionValues(name).length + 1 }]); }));
 document.querySelector("[data-admin-save]").addEventListener("click", async () => {
-  try { const draft = structuredClone(portfolioConfig); document.querySelectorAll("[data-admin-site]").forEach((control) => setPath(draft, control.dataset.adminSite, control.value.trim())); const notificationEmails = draft.notificationEmails; delete draft.notificationEmails; setMessage(status, "Saving..."); const response = await fetch("/admin-data/", { method: "POST", headers: headers(), body: JSON.stringify({ config: draft, collections: Object.fromEntries(Object.keys(fields).map((name) => [name, collectionValues(name)])), notificationEmails }) }); const data = await response.json(); if (!response.ok) throw new Error(data.detail || "Changes could not be saved."); setMessage(status, "Saved. The portfolio is updated."); await loadAdmin(); } catch (error) { setMessage(status, error.message || "Changes could not be saved.", true); }
+  try { const draft = structuredClone(portfolioConfig); document.querySelectorAll("[data-admin-site]").forEach((control) => setPath(draft, control.dataset.adminSite, control.value.trim())); const notificationEmails = draft.notificationEmails; delete draft.notificationEmails; setMessage(status, "Uploading project media..."); await uploadProjectMedia(); setMessage(status, "Saving..."); const response = await fetch("/admin-data/", { method: "POST", headers: headers(), body: JSON.stringify({ config: draft, collections: Object.fromEntries(Object.keys(fields).map((name) => [name, collectionValues(name)])), notificationEmails }) }); const data = await response.json(); if (!response.ok) throw new Error(data.detail || "Changes could not be saved."); setMessage(status, "Saved. The portfolio is updated."); await loadAdmin(); } catch (error) { setMessage(status, error.message || "Changes could not be saved.", true); }
 });
