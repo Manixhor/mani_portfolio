@@ -67,9 +67,14 @@ function splitBulletText(value) {
   const text = plainText(value).replace(/\s+/g, " ");
   if (!text) return [];
 
-  const sentences = text.match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) || [text];
+  const urls = [];
+  const safeText = text.replace(/https?:\/\/\S+/g, (url) => {
+    urls.push(url);
+    return `__PORTFOLIO_URL_${urls.length - 1}__`;
+  });
+  const sentences = safeText.match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) || [safeText];
   return sentences
-    .map((sentence) => sentence.trim())
+    .map((sentence) => sentence.replace(/__PORTFOLIO_URL_(\d+)__/g, (_match, index) => urls[Number(index)]).trim())
     .filter(Boolean);
 }
 
@@ -662,7 +667,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=25").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=26").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
