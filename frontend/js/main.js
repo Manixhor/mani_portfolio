@@ -218,7 +218,18 @@ function renderExperience(experience = {}) {
     const list = article.querySelector("ul");
     (item.points || []).flatMap(splitBulletText).forEach((point) => {
       const li = document.createElement("li");
-      li.textContent = point;
+      const linkMatch = point.match(/^(.*?)(https?:\/\/\S+)$/);
+      if (linkMatch) {
+        const label = linkMatch[1].replace(/:\s*$/, "").trim();
+        const link = document.createElement("a");
+        link.href = linkMatch[2];
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = label || linkMatch[2];
+        li.append(link);
+      } else {
+        li.textContent = point;
+      }
       list.appendChild(li);
     });
 
@@ -651,7 +662,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=24").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=25").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
