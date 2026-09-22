@@ -223,7 +223,7 @@ function renderExperience(experience = {}) {
     const list = article.querySelector("ul");
     (item.points || []).flatMap(splitBulletText).forEach((point) => {
       const li = document.createElement("li");
-      const linkMatch = point.match(/^(.*?)(https?:\/\/\S+)$/);
+      const linkMatch = point.match(/^(.*?)(https?:\/\/[^\s]+)(?:\s*)$/);
       if (linkMatch) {
         const label = linkMatch[1].replace(/:\s*$/, "").trim();
         const link = document.createElement("a");
@@ -667,7 +667,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=26").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=27").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
