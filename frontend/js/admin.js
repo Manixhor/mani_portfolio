@@ -72,7 +72,7 @@ function renderResumeUpload(field) {
   input.dataset.resumeUpload = "";
   const helper = document.createElement("small");
   helper.dataset.resumeUploadStatus = "";
-  helper.textContent = "Upload a PDF to replace the resume URL above when you save.";
+  helper.textContent = "Upload a PDF to replace the resume URL above when you save. Cloudinary must allow public PDF delivery.";
   field.append(input, helper);
 }
 
@@ -141,6 +141,7 @@ async function uploadResume() {
   form.append("timestamp", signatureData.timestamp);
   form.append("api_key", signatureData.apiKey);
   form.append("signature", signatureData.signature);
+  form.append("access_mode", signatureData.accessMode);
   if (helper) helper.textContent = "Uploading resume...";
   const uploadResponse = await fetch(signatureData.uploadUrl, { method: "POST", body: form });
   const uploadData = await uploadResponse.json();

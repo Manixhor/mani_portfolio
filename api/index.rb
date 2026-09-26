@@ -561,15 +561,19 @@ def create_resume_upload_signature(request)
 
   timestamp = Time.now.to_i.to_s
   public_id = "mani_portfolio/resumes/#{SecureRandom.uuid}"
-  signature_source = "public_id=#{public_id}&timestamp=#{timestamp}#{api_secret}"
+  # PDFs uploaded as image assets can be previewed in the browser and can use
+  # Cloudinary's PDF delivery features. Raw uploads do not support previews.
+  access_mode = "public"
+  signature_source = "access_mode=#{access_mode}&public_id=#{public_id}&timestamp=#{timestamp}#{api_secret}"
   signature = Digest::SHA1.hexdigest(signature_source)
 
   [{
-    "uploadUrl" => "https://api.cloudinary.com/v1_1/#{cloud_name}/raw/upload",
+    "uploadUrl" => "https://api.cloudinary.com/v1_1/#{cloud_name}/image/upload",
     "publicId" => public_id,
     "timestamp" => timestamp,
     "apiKey" => api_key,
-    "signature" => signature
+    "signature" => signature,
+    "accessMode" => access_mode
   }, 200]
 end
 
