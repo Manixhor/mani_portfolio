@@ -69,6 +69,7 @@ end
 
 def portfolio_config
   ensure_project_blog_column
+  ensure_skill_project_columns
   config = database.exec_params(<<~SQL).first
     SELECT hero, about, experience, skills, projects, contact, footer
     FROM portfolio_data_portfolioconfig
@@ -93,12 +94,19 @@ def portfolio_config
   end
 
   skills = json_value(config["skills"])
-  skills["items"] = database.exec(<<~SQL).map { |item| { "name" => item["name"], "icon" => item["icon"].to_s } }
-    SELECT name, icon
+  skills["items"] = database.exec(<<~SQL).map do |item|
+    SELECT name, icon, is_clickable, project_names
     FROM portfolio_data_skillitem
     WHERE is_visible = TRUE
     ORDER BY "order" ASC, name ASC
   SQL
+    {
+      "name" => item["name"],
+      "icon" => item["icon"].to_s,
+      "isClickable" => item["is_clickable"] == "t",
+      "projectNames" => item["project_names"].to_s.split(",").map(&:strip).reject(&:empty?)
+    }
+  end
 
   certifications = {
     "sectionLabel" => "Certifications",
@@ -161,6 +169,14 @@ def ensure_project_blog_column
   database.exec("ALTER TABLE portfolio_data_projectitem ADD COLUMN IF NOT EXISTS blog_url TEXT NOT NULL DEFAULT ''")
   database.exec("ALTER TABLE portfolio_data_projectitem ADD COLUMN IF NOT EXISTS video_url TEXT NOT NULL DEFAULT ''")
   @project_blog_column_ready = true
+end
+
+def ensure_skill_project_columns
+  return if @skill_project_columns_ready
+
+  database.exec("ALTER TABLE portfolio_data_skillitem ADD COLUMN IF NOT EXISTS is_clickable BOOLEAN NOT NULL DEFAULT FALSE")
+  database.exec("ALTER TABLE portfolio_data_skillitem ADD COLUMN IF NOT EXISTS project_names TEXT NOT NULL DEFAULT ''")
+  @skill_project_columns_ready = true
 end
 
 def request_body(request)
@@ -418,6 +434,7 @@ def portfolio_admin_data(request)
   return authorization_error if authorization_error
 
   ensure_project_blog_column
+  ensure_skill_project_columns
   config = database.exec(<<~SQL).first
     SELECT hero, about, experience, skills, projects, contact, footer, notification_emails
     FROM portfolio_data_portfolioconfig WHERE id = 1
@@ -426,7 +443,7 @@ def portfolio_admin_data(request)
 
   collections = {
     "experience" => database.exec('SELECT id, role, company, period, points, "order", is_visible FROM portfolio_data_experienceitem ORDER BY "order", id').to_a,
-    "skills" => database.exec('SELECT id, name, icon, "order", is_visible FROM portfolio_data_skillitem ORDER BY "order", id').to_a,
+    "skills" => database.exec('SELECT id, name, icon, is_clickable, project_names, "order", is_visible FROM portfolio_data_skillitem ORDER BY "order", id').to_a,
     "projects" => database.exec('SELECT id, name, description, brief, stack, live_url, show_live_url, github_url, show_github_url, blog_url, image_url, video_url, image_alt, "order", is_visible FROM portfolio_data_projectitem ORDER BY "order", id').to_a,
     "certifications" => database.exec('SELECT id, title, issuer, issued_date, credential_url, description, image_url, image_alt, "order", is_visible FROM portfolio_data_certificationitem ORDER BY "order", id').to_a
   }
@@ -459,7 +476,7 @@ def ensure_admin_text_columns
 
   editable_columns = {
     "portfolio_data_experienceitem" => %w[role company period points],
-    "portfolio_data_skillitem" => %w[name icon],
+    "portfolio_data_skillitem" => %w[name icon project_names],
     "portfolio_data_projectitem" => %w[name description brief stack live_url github_url blog_url image_url video_url image_alt],
     "portfolio_data_certificationitem" => %w[title issuer issued_date credential_url description image_url image_alt]
   }
@@ -482,6 +499,7 @@ def save_portfolio_admin_data(request)
   return [{ "detail" => "Invalid admin content payload." }, 400] unless config.is_a?(Hash) && collections.is_a?(Hash)
 
   ensure_project_blog_column
+  ensure_skill_project_columns
   ensure_admin_text_columns
   database.transaction do |connection|
     connection.exec_params(
@@ -489,7 +507,7 @@ def save_portfolio_admin_data(request)
       %w[hero about experience skills projects contact footer].map { |key| JSON.generate(config[key] || {}) } + [payload["notificationEmails"].to_s]
     )
     replace_admin_collection("portfolio_data_experienceitem", %w[role company period points order is_visible], Array(collections["experience"]))
-    replace_admin_collection("portfolio_data_skillitem", %w[name icon order is_visible], Array(collections["skills"]))
+    replace_admin_collection("portfolio_data_skillitem", %w[name icon is_clickable project_names order is_visible], Array(collections["skills"]))
     replace_admin_collection("portfolio_data_projectitem", %w[name description brief stack live_url show_live_url github_url show_github_url blog_url image_url video_url image_alt order is_visible], Array(collections["projects"]))
     replace_admin_collection("portfolio_data_certificationitem", %w[title issuer issued_date credential_url description image_url image_alt order is_visible], Array(collections["certifications"]))
   end
@@ -529,6 +547,30 @@ def create_project_upload_signature(request)
 
   payload = request_body(request)
   media_upload_signature(payload["contentType"], "projects")
+end
+
+def create_resume_upload_signature(request)
+  authorization_error = portfolio_admin_error(request)
+  return authorization_error if authorization_error
+
+  payload = request_body(request)
+  return [{ "detail" => "Upload a PDF resume." }, 400] unless payload["contentType"].to_s == "application/pdf"
+
+  cloud_name, api_key, api_secret = cloudinary_credentials
+  return [{ "detail" => "Resume uploads are not configured." }, 503] unless cloud_name
+
+  timestamp = Time.now.to_i.to_s
+  public_id = "mani_portfolio/resumes/#{SecureRandom.uuid}"
+  signature_source = "public_id=#{public_id}&timestamp=#{timestamp}#{api_secret}"
+  signature = Digest::SHA1.hexdigest(signature_source)
+
+  [{
+    "uploadUrl" => "https://api.cloudinary.com/v1_1/#{cloud_name}/raw/upload",
+    "publicId" => public_id,
+    "timestamp" => timestamp,
+    "apiKey" => api_key,
+    "signature" => signature
+  }, 200]
 end
 
 def media_upload_signature(content_type, folder)
@@ -631,6 +673,13 @@ Handler = proc do |request, response|
   elsif path == "/project-upload/" || path == "/project-upload"
     if request.request_method == "POST"
       payload, status = create_project_upload_signature(request)
+      json_response(response, payload, status)
+    else
+      json_response(response, { "detail" => "Method not allowed." }, 405)
+    end
+  elsif path == "/resume-upload/" || path == "/resume-upload"
+    if request.request_method == "POST"
+      payload, status = create_resume_upload_signature(request)
       json_response(response, payload, status)
     else
       json_response(response, { "detail" => "Method not allowed." }, 405)

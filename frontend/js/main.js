@@ -243,7 +243,7 @@ function renderExperience(experience = {}) {
   });
 }
 
-function renderSkills(skills = {}) {
+function renderSkills(skills = {}, projects = []) {
   setSectionTitle('[data-content="skills-label"]', '[data-content="skills-heading"]', skills.sectionLabel, skills.heading);
 
   const grid = document.querySelector('[data-render="skills"]');
@@ -253,8 +253,18 @@ function renderSkills(skills = {}) {
   (skills.items || []).forEach((skill) => {
     const skillName = plainText(skill.name);
     const logo = skillLogo(skillName, skill.icon);
-    const item = document.createElement("div");
+    const relatedProjects = (skill.projectNames || [])
+      .map((projectName) => projects.find((project) => plainText(project.name).toLowerCase() === plainText(projectName).toLowerCase()))
+      .filter(Boolean);
+    const isInteractive = skill.isClickable === true && relatedProjects.length > 0;
+    const item = document.createElement(isInteractive ? "button" : "div");
     item.className = "skill-item";
+    if (isInteractive) {
+      item.type = "button";
+      item.classList.add("skill-item--interactive");
+      item.setAttribute("aria-label", `View projects using ${skillName}`);
+      item.addEventListener("click", () => openSkillModal(skillName, relatedProjects));
+    }
 
     if (logo.startsWith("text:")) {
       item.innerHTML = `<strong class="skill-logo-text"></strong><span></span>`;
@@ -457,8 +467,8 @@ function renderPortfolio(config) {
   renderHero(config.hero || {});
   renderAbout(config.about || {});
   renderExperience(config.experience || {});
-  renderSkills(config.skills || {});
   renderProjects(config.projects || {});
+  renderSkills(config.skills || {}, config.projects?.items || []);
   renderContact(config.contact || {}, config.hero || {});
 }
 
@@ -518,14 +528,18 @@ function setProjectLink(link, url) {
 }
 
 function openProjectModal(trigger) {
+  openProjectDetails(trigger.dataset);
+}
+
+function openProjectDetails(project = {}) {
   if (!projectModal || !modalDialog) return;
 
-  modalTitle.textContent = trigger.dataset.title || "Project";
-  modalBrief.textContent = trigger.dataset.brief || "";
-  modalStack.textContent = trigger.dataset.stack || "";
-  const hasLiveLink = setProjectLink(modalLive, trigger.dataset.live);
-  const hasGithubLink = setProjectLink(modalGithub, trigger.dataset.github);
-  const hasBlogLink = setProjectLink(modalBlog, trigger.dataset.blog);
+  modalTitle.textContent = project.title || project.name || "Project";
+  modalBrief.textContent = project.brief || project.description || "";
+  modalStack.textContent = project.stack || "";
+  const hasLiveLink = setProjectLink(modalLive, project.live || project.liveUrl);
+  const hasGithubLink = setProjectLink(modalGithub, project.github || project.githubUrl);
+  const hasBlogLink = setProjectLink(modalBlog, project.blog || project.blogUrl);
   if (modalLinks) {
     modalLinks.hidden = !hasLiveLink && !hasGithubLink && !hasBlogLink;
   }
@@ -540,6 +554,41 @@ function closeProjectModal() {
 
   projectModal.classList.remove("is-open");
   projectModal.setAttribute("aria-hidden", "true");
+}
+
+const skillModal = document.getElementById("skill-modal");
+const skillDialog = skillModal?.querySelector(".skill-modal__dialog");
+const skillTitle = document.getElementById("skill-modal-title");
+const skillProjects = skillModal?.querySelector("[data-skill-projects]");
+
+function openSkillModal(skillName, projects) {
+  if (!skillModal || !skillDialog || !skillTitle || !skillProjects) return;
+
+  skillTitle.textContent = skillName;
+  skillProjects.innerHTML = "";
+  projects.forEach((project) => {
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.innerHTML = "<strong></strong><span></span>";
+    trigger.querySelector("strong").textContent = plainText(project.name);
+    trigger.querySelector("span").textContent = plainText(project.stack);
+    trigger.addEventListener("click", () => {
+      closeSkillModal();
+      openProjectDetails(project);
+    });
+    skillProjects.appendChild(trigger);
+  });
+
+  skillModal.classList.add("is-open");
+  skillModal.setAttribute("aria-hidden", "false");
+  skillDialog.focus();
+}
+
+function closeSkillModal() {
+  if (!skillModal) return;
+
+  skillModal.classList.remove("is-open");
+  skillModal.setAttribute("aria-hidden", "true");
 }
 
 const resumeModal = document.getElementById("resume-modal");
@@ -740,7 +789,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=29").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=30").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
@@ -775,6 +824,10 @@ document.querySelectorAll("[data-close-modal]").forEach((control) => {
   control.addEventListener("click", closeProjectModal);
 });
 
+document.querySelectorAll("[data-close-skill]").forEach((control) => {
+  control.addEventListener("click", closeSkillModal);
+});
+
 document.querySelectorAll("[data-close-resume]").forEach((control) => {
   control.addEventListener("click", closeResumePreview);
 });
@@ -790,6 +843,7 @@ document.querySelectorAll(".project-modal__links a").forEach((link) => {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeProjectModal();
+    closeSkillModal();
     closeResumePreview();
   }
 });

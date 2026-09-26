@@ -23,7 +23,7 @@
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/static/icons/icon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=25" />
+  <link rel="stylesheet" href="/static/css/style.css?v=26" />
 </head>
 <body>
   <div id="progress-bar" aria-hidden="true"></div>
@@ -123,6 +123,17 @@
     </section>
   </div>
 
+  <div class="skill-modal" id="skill-modal" aria-hidden="true">
+    <div class="skill-modal__backdrop" data-close-skill></div>
+    <section class="skill-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="skill-modal-title" tabindex="-1">
+      <button class="skill-modal__close" type="button" aria-label="Close skill projects" data-close-skill>&times;</button>
+      <p class="project-modal__eyebrow">Selected work</p>
+      <h2 id="skill-modal-title"></h2>
+      <p class="skill-modal__intro">Projects where I used this skill.</p>
+      <div class="skill-modal__projects" data-skill-projects></div>
+    </section>
+  </div>
+
   <div class="resume-modal" id="resume-modal" aria-hidden="true">
     <div class="resume-modal__backdrop" data-close-resume></div>
     <section class="resume-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="resume-modal-title" tabindex="-1">
@@ -163,7 +174,7 @@
     </section>
   </aside>
 
-  <script src="/app.js?v=19"></script>
+  <script src="/app.js?v=20"></script>
   <script src="/chat-widget.js?v=3"></script>
 </body>
 </html>

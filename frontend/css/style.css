@@ -385,8 +385,26 @@ button.outline-button:disabled {
   justify-items: center;
   gap: 12px;
   min-height: 104px;
+  padding: 0;
+  border: 0;
   border-radius: var(--radius-md);
+  background: transparent;
   color: var(--ink);
+  font: inherit;
+}
+
+.skill-item--interactive {
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.skill-item--interactive:hover {
+  transform: translateY(-4px);
+}
+
+.skill-item--interactive:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 6px;
 }
 
 .skill-item i {
@@ -1213,6 +1231,111 @@ button.outline-button:disabled {
 .project-modal__links a.is-placeholder {
   opacity: 0.48;
   cursor: not-allowed;
+}
+
+.skill-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.24s ease;
+}
+
+.skill-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.skill-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(17, 18, 20, 0.42);
+  backdrop-filter: blur(6px);
+}
+
+.skill-modal__dialog {
+  position: relative;
+  width: min(580px, 100%);
+  padding: clamp(26px, 5vw, 42px);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+  transform: translateY(16px) scale(0.98);
+  transition: transform 0.24s ease;
+}
+
+.skill-modal.is-open .skill-modal__dialog {
+  transform: translateY(0) scale(1);
+}
+
+.skill-modal__close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.skill-modal__close:hover {
+  background: var(--soft);
+}
+
+.skill-modal h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  line-height: 1;
+}
+
+.skill-modal__intro {
+  margin: 12px 0 20px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.skill-modal__projects {
+  display: grid;
+  gap: 10px;
+}
+
+.skill-modal__projects button {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.skill-modal__projects button:hover,
+.skill-modal__projects button:focus-visible {
+  border-color: var(--ink);
+  background: var(--soft);
+}
+
+.skill-modal__projects strong {
+  font-size: 0.98rem;
+}
+
+.skill-modal__projects span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.35;
 }
 
 .resume-modal {
