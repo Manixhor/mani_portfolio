@@ -178,7 +178,8 @@ function renderHero(hero = {}) {
   const resumeLink = document.querySelector('[data-content="resume-link"]');
   if (resumeLink) {
     resumeLink.textContent = hero.resumeLabel;
-    resumeLink.href = hero.resumeUrl || "#";
+    resumeLink.dataset.resumeUrl = cleanProjectUrl(hero.resumeUrl);
+    resumeLink.disabled = !resumeLink.dataset.resumeUrl;
   }
 }
 
@@ -541,6 +542,65 @@ function closeProjectModal() {
   projectModal.setAttribute("aria-hidden", "true");
 }
 
+const resumeModal = document.getElementById("resume-modal");
+const resumeDialog = resumeModal?.querySelector(".resume-modal__dialog");
+const resumeFrame = resumeModal?.querySelector("[data-resume-frame]");
+const resumeStage = resumeModal?.querySelector("[data-resume-stage]");
+const resumeOpenLink = resumeModal?.querySelector("[data-resume-open]");
+const resumeZoomValue = resumeModal?.querySelector("[data-resume-zoom-value]");
+let resumeZoom = 1;
+
+function previewableResumeUrl(url) {
+  const driveFile = url.match(/^https?:\/\/drive\.google\.com\/file\/d\/([^/?]+)/i);
+  return driveFile ? `https://drive.google.com/file/d/${driveFile[1]}/preview` : url;
+}
+
+function updateResumeZoom() {
+  if (!resumeStage || !resumeZoomValue) return;
+
+  resumeStage.style.setProperty("--resume-zoom", String(resumeZoom));
+  const value = `${Math.round(resumeZoom * 100)}%`;
+  resumeZoomValue.value = value;
+  resumeZoomValue.textContent = value;
+}
+
+function openResumePreview(url) {
+  if (!resumeModal || !resumeDialog || !resumeFrame || !resumeOpenLink || !url) return;
+
+  resumeZoom = 1;
+  updateResumeZoom();
+  resumeOpenLink.href = url;
+  resumeFrame.src = previewableResumeUrl(url);
+  resumeModal.classList.add("is-open");
+  resumeModal.setAttribute("aria-hidden", "false");
+  resumeDialog.focus();
+}
+
+function closeResumePreview() {
+  if (!resumeModal || !resumeFrame) return;
+
+  resumeModal.classList.remove("is-open");
+  resumeModal.setAttribute("aria-hidden", "true");
+  resumeFrame.src = "about:blank";
+}
+
+function setupResumePreview() {
+  const resumeTrigger = document.querySelector('[data-content="resume-link"]');
+  const zoomOut = resumeModal?.querySelector("[data-resume-zoom-out]");
+  const zoomIn = resumeModal?.querySelector("[data-resume-zoom-in]");
+  if (!resumeTrigger || !zoomOut || !zoomIn) return;
+
+  resumeTrigger.addEventListener("click", () => openResumePreview(resumeTrigger.dataset.resumeUrl));
+  zoomOut.addEventListener("click", () => {
+    resumeZoom = Math.max(0.8, Number((resumeZoom - 0.2).toFixed(1)));
+    updateResumeZoom();
+  });
+  zoomIn.addEventListener("click", () => {
+    resumeZoom = Math.min(1.8, Number((resumeZoom + 0.2).toFixed(1)));
+    updateResumeZoom();
+  });
+}
+
 function setContactStatus(message, type = "") {
   const status = document.querySelector("[data-contact-status]");
   if (!status) return;
@@ -680,7 +740,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=28").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=29").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
@@ -715,6 +775,10 @@ document.querySelectorAll("[data-close-modal]").forEach((control) => {
   control.addEventListener("click", closeProjectModal);
 });
 
+document.querySelectorAll("[data-close-resume]").forEach((control) => {
+  control.addEventListener("click", closeResumePreview);
+});
+
 document.querySelectorAll(".project-modal__links a").forEach((link) => {
   link.addEventListener("click", (event) => {
     if (link.classList.contains("is-placeholder")) {
@@ -724,7 +788,10 @@ document.querySelectorAll(".project-modal__links a").forEach((link) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeProjectModal();
+  if (event.key === "Escape") {
+    closeProjectModal();
+    closeResumePreview();
+  }
 });
 
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
@@ -747,6 +814,7 @@ registerServiceWorker();
 async function initializePortfolio() {
   setupMobileNav();
   setupContactForm();
+  setupResumePreview();
 
   try {
     const config = await loadPortfolioConfig();
