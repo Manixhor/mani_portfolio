@@ -58,7 +58,7 @@ end
 
 def image_url(value)
   return nil if value.nil? || value.empty?
-  return value if value.start_with?("http://", "https://", "//")
+  return value if value.start_with?("http://", "https://", "//", "/static/")
 
   cloudinary_url = ENV["CLOUDINARY_URL"].to_s
   cloud_name = cloudinary_url.match(%r{cloudinary://[^@]+@([^/?]+)})&.captures&.first
@@ -716,7 +716,7 @@ Handler = proc do |request, response|
     static_file(response, File.join(FRONTEND, "js", "admin.js"))
   elsif path == "/manifest.webmanifest"
     static_file(response, File.join(FRONTEND, "manifest.webmanifest"))
-  elsif path.start_with?("/static/css/", "/static/js/", "/static/icons/", "/css/", "/js/", "/icons/")
+  elsif path.start_with?("/static/css/", "/static/js/", "/static/icons/", "/static/images/", "/css/", "/js/", "/icons/", "/images/")
     relative = path.sub(%r{^/static/}, "").sub(%r{^/}, "")
     static_file(response, File.join(FRONTEND, relative))
   else
