@@ -343,6 +343,9 @@ function renderProjects(projects = {}) {
     const stack = normalizeStack(project);
     const article = document.createElement("article");
     article.className = "project-card";
+    article.tabIndex = 0;
+    article.setAttribute("role", "button");
+    article.setAttribute("aria-label", `View project: ${plainText(project.name) || "Project"}`);
     article.innerHTML = `
       <div class="project-media">
         <span class="project-media-fallback" aria-hidden="true">Preview unavailable</span>
@@ -351,7 +354,7 @@ function renderProjects(projects = {}) {
         <h3></h3>
         <p></p>
         <span></span>
-        <button class="project-trigger" type="button">View Project <b aria-hidden="true">-&gt;</b></button>
+        <span class="project-trigger" aria-hidden="true">View Project <b>-&gt;</b></span>
       </div>
     `;
 
@@ -377,14 +380,24 @@ function renderProjects(projects = {}) {
     article.querySelector("p").textContent = plainText(project.description);
     article.querySelector(".project-card-content span").textContent = plainText(stack);
 
-    const trigger = article.querySelector(".project-trigger");
-    trigger.dataset.title = plainText(project.name);
-    trigger.dataset.stack = plainText(stack);
-    trigger.dataset.brief = plainText(project.brief || project.description);
-    trigger.dataset.live = cleanProjectUrl(project.liveUrl);
-    trigger.dataset.github = cleanProjectUrl(project.githubUrl);
-    trigger.dataset.blog = cleanProjectUrl(project.blogUrl);
-    trigger.addEventListener("click", () => openProjectModal(trigger));
+    article.dataset.title = plainText(project.name);
+    article.dataset.stack = plainText(stack);
+    article.dataset.brief = plainText(project.brief || project.description);
+    article.dataset.live = cleanProjectUrl(project.liveUrl);
+    article.dataset.github = cleanProjectUrl(project.githubUrl);
+    article.dataset.blog = cleanProjectUrl(project.blogUrl);
+
+    const openProject = () => openProjectModal(article);
+    article.addEventListener("click", (event) => {
+      if (event.target.closest("video")) return;
+      openProject();
+    });
+    article.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openProject();
+      }
+    });
 
     grid.appendChild(article);
   });
@@ -667,7 +680,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=27").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=28").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
