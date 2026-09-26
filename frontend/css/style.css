@@ -1531,7 +1531,11 @@ a {
 }
 
 .chatbot-widget__window {
-  width: min(380px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  width: min(380px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1546,6 +1550,7 @@ a {
 
 .chatbot-widget__window header {
   display: flex;
+  flex: none;
   align-items: center;
   justify-content: space-between;
   padding: 16px 18px;
@@ -1584,11 +1589,20 @@ a {
   line-height: 1;
 }
 
+.chatbot-widget__window form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .chatbot-widget__messages {
   display: flex;
   flex-direction: column;
+  flex: 1 1 270px;
   gap: 9px;
   height: 270px;
+  min-height: 100px;
   padding: 18px;
   overflow-y: auto;
 }
@@ -1602,6 +1616,7 @@ a {
   background: var(--soft);
   font-size: 0.84rem;
   line-height: 1.42;
+  overflow-wrap: anywhere;
   animation: chatMessageIn 220ms ease both;
 }
 
@@ -1619,6 +1634,7 @@ a {
 }
 
 .chatbot-widget__choices button {
+  max-width: 100%;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--white);
@@ -1628,6 +1644,7 @@ a {
   font-size: 0.72rem;
   font-weight: 700;
   padding: 9px 11px;
+  overflow-wrap: anywhere;
 }
 
 .chatbot-widget__choices button:hover {
@@ -1641,6 +1658,10 @@ a {
   gap: 8px;
   padding: 12px 18px 8px;
   border-top: 1px solid var(--line);
+}
+
+.chatbot-widget__composer [data-chatbot-input-slot] {
+  min-width: 0;
 }
 
 .chatbot-widget__input {
@@ -1993,8 +2014,20 @@ a {
   }
 
   .chatbot-widget {
+    left: 12px;
     right: 12px;
-    bottom: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .chatbot-widget__window {
+    width: 100%;
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+
+  .chatbot-widget__input {
+    font-size: 16px;
   }
 
   .chatbot-widget__launcher {
