@@ -268,7 +268,10 @@ function renderSkills(skills = {}, projects = []) {
 
     if (logo.startsWith("text:")) {
       item.innerHTML = `<strong class="skill-logo-text"></strong><span></span>`;
-      item.querySelector("strong").textContent = logo.replace("text:", "");
+      const textLogo = logo.replace("text:", "");
+      const logoElement = item.querySelector("strong");
+      logoElement.textContent = textLogo;
+      logoElement.classList.toggle("skill-logo-text--compact", textLogo.length > 3);
     } else {
       item.innerHTML = `<i></i><span></span>`;
       item.querySelector("i").className = logo;
@@ -789,7 +792,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=30").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=31").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });

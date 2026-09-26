@@ -1,8 +1,8 @@
-const CACHE_NAME = "mani-portfolio-v30";
+const CACHE_NAME = "mani-portfolio-v31";
 const APP_SHELL = [
   "/",
-  "/static/css/style.css?v=26",
-  "/app.js?v=20",
+  "/static/css/style.css?v=27",
+  "/app.js?v=21",
   "/manifest.webmanifest",
   "/static/icons/icon.svg"
 ];

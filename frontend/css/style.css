@@ -426,6 +426,11 @@ button.outline-button:disabled {
   line-height: 1;
 }
 
+.skill-logo-text--compact {
+  font-size: clamp(0.64rem, 1.4vw, 0.82rem);
+  letter-spacing: 0;
+}
+
 .skill-item span {
   max-width: 100%;
   overflow-wrap: anywhere;
