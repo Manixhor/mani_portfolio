@@ -411,6 +411,46 @@ def create_blog_post(request)
   }, 201]
 end
 
+def update_blog_post(request, post_id)
+  authorization_error = blog_admin_error(request)
+  return authorization_error if authorization_error
+
+  payload = request_body(request)
+  header = payload["header"].to_s.strip
+  subheader = payload["subheader"].to_s.strip
+  description = payload["description"].to_s.strip
+  return [{ "detail" => "Header and description are required." }, 400] if header.empty? || description.empty?
+
+  ensure_blog_table
+  existing = database.exec_params("SELECT image_url, video_url FROM portfolio_blogpost WHERE id = $1", [post_id]).first
+  return [{ "detail" => "Blog post not found." }, 404] unless existing
+
+  image_url = payload.key?("imageUrl") ? payload["imageUrl"].to_s.strip : existing["image_url"].to_s
+  video_url = payload.key?("videoUrl") ? payload["videoUrl"].to_s.strip : existing["video_url"].to_s
+  return [{ "detail" => "Add either an image or a video." }, 400] if image_url.empty? && video_url.empty?
+  return [{ "detail" => "A post can contain one media file." }, 400] unless image_url.empty? || video_url.empty?
+
+  post = database.exec_params(
+    <<~SQL,
+      UPDATE portfolio_blogpost
+      SET image_url = $1, video_url = $2, header = $3, subheader = $4, description = $5
+      WHERE id = $6
+      RETURNING id, image_url, video_url, header, subheader, description, created_at
+    SQL
+    [image_url, video_url, header, subheader, description, post_id]
+  ).first
+
+  [{
+    "id" => post["id"].to_i,
+    "imageUrl" => post["image_url"].to_s,
+    "videoUrl" => post["video_url"].to_s,
+    "header" => post["header"].to_s,
+    "subheader" => post["subheader"].to_s,
+    "description" => post["description"].to_s,
+    "createdAt" => post["created_at"].to_s
+  }, 200]
+end
+
 def blog_admin_error(request)
   expected_password = ENV["BLOG_ADMIN_PASSWORD"].to_s
   supplied_password = request_header(request, "x-blog-admin-password")
@@ -664,6 +704,9 @@ Handler = proc do |request, response|
     if request.request_method == "GET"
       post = with_database_retry { blog_post(path[/\d+/].to_i) }
       json_response(response, post || { "detail" => "Blog post not found." }, post ? 200 : 404)
+    elsif request.request_method == "POST"
+      payload, status = with_database_retry { update_blog_post(request, path[/\d+/].to_i) }
+      json_response(response, payload, status)
     else
       json_response(response, { "detail" => "Method not allowed." }, 405)
     end

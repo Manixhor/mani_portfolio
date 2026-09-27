@@ -815,11 +815,33 @@ button.outline-button:disabled {
 }
 
 .blog-card {
+  position: relative;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--white);
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.blog-card__edit {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--ink);
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.blog-card__edit:hover {
+  background: var(--ink);
+  color: #fff;
 }
 
 .blog-card:hover {

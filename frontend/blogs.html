@@ -48,8 +48,8 @@
     <form class="blog-form" data-blog-form>
       <div class="blog-dialog__heading">
         <div>
-          <p class="blogs-kicker">New post</p>
-          <h2 id="blog-dialog-title">Add blog</h2>
+          <p class="blogs-kicker" data-blog-form-kicker>New post</p>
+          <h2 id="blog-dialog-title" data-blog-form-title>Add blog</h2>
         </div>
         <button class="blog-dialog__close" type="button" data-close-blog-form aria-label="Close">&times;</button>
       </div>
@@ -59,14 +59,14 @@
           <option value="video">Video</option>
         </select>
       </label>
-      <label>Media file<input name="media" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required data-blog-media-input /></label>
+      <label>Media file<input name="media" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required data-blog-media-input /><small data-blog-media-help>Required for a new post.</small></label>
       <label>Header<input name="header" type="text" required maxlength="180" /></label>
       <label>Subheader<input name="subheader" type="text" maxlength="240" /></label>
       <label>Description<textarea name="description" rows="7" required></textarea></label>
       <label>Admin password<input name="password" type="password" required autocomplete="current-password" /></label>
       <div class="blog-form__actions">
         <button class="outline-button" type="button" data-close-blog-form>Cancel</button>
-        <button class="blog-publish-button" type="submit">Publish</button>
+        <button class="blog-publish-button" type="submit" data-blog-submit>Publish</button>
       </div>
       <p class="blog-form__status" data-blog-form-status aria-live="polite"></p>
     </form>
@@ -79,7 +79,7 @@
       <form data-chatbot-form><div class="chatbot-widget__messages" data-chatbot-messages role="log" aria-live="polite"></div><div class="chatbot-widget__choices" data-chatbot-choices></div><label class="sr-only" data-chatbot-input-label></label><div class="chatbot-widget__composer"><div data-chatbot-input-slot></div><button type="submit" data-chatbot-submit hidden>Next</button></div><p class="chatbot-widget__status" data-chatbot-status aria-live="polite"></p></form>
     </section>
   </aside>
-  <script src="/blogs.js?v=6"></script>
+  <script src="/blogs.js?v=7"></script>
   <script src="/chat-widget.js?v=3"></script>
 </body>
 </html>
