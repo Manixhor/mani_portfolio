@@ -471,6 +471,7 @@ function renderPortfolio(config) {
   renderAbout(config.about || {});
   renderExperience(config.experience || {});
   renderProjects(config.projects || {});
+  renderCertifications(config.certifications || {});
   renderSkills(config.skills || {}, config.projects?.items || []);
   renderContact(config.contact || {}, config.hero || {});
 }
@@ -792,7 +793,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=31").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=32").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
