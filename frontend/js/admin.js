@@ -47,6 +47,7 @@ function renderCollection(name, items) {
       control.dataset.field = key; if (type === "checkbox") { control.type = "checkbox"; control.checked = item[key] === true || item[key] === "t"; } else { control.type = type; control.value = item[key] ?? ""; } field.appendChild(control); card.appendChild(field);
     });
     if (name === "projects") renderProjectMediaUpload(card);
+    if (name === "certifications") renderCertificationImageUpload(card);
     container.appendChild(card);
   });
 }
@@ -74,6 +75,20 @@ function renderResumeUpload(field) {
   helper.dataset.resumeUploadStatus = "";
   helper.textContent = "Upload a PDF to replace the resume URL above when you save. Cloudinary must allow public PDF delivery.";
   field.append(input, helper);
+}
+
+function renderCertificationImageUpload(card) {
+  const field = document.createElement("label");
+  field.textContent = "Upload certificate image";
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/jpeg,image/png,image/webp,image/avif";
+  input.dataset.certificationImage = "";
+  const helper = document.createElement("small");
+  helper.dataset.certificationImageStatus = "";
+  helper.textContent = "Choose an image. Uploading replaces the image URL when you save.";
+  field.append(input, helper);
+  card.appendChild(field);
 }
 
 function collectionValues(name) {
@@ -151,6 +166,42 @@ async function uploadResume() {
   if (helper) helper.textContent = "Resume upload ready. Save all changes to publish it.";
 }
 
+async function uploadCertificationImages() {
+  const certificationCards = document.querySelectorAll('[data-admin-item="certifications"]');
+  for (const card of certificationCards) {
+    const input = card.querySelector("[data-certification-image]");
+    const image = input?.files?.[0];
+    if (!image) continue;
+    if (!image.type.startsWith("image/")) throw new Error("Certification upload must be an image.");
+    if (image.size > 10 * 1024 * 1024) throw new Error("Certification image must be 10 MB or smaller.");
+
+    const helper = card.querySelector("[data-certification-image-status]");
+    if (helper) helper.textContent = "Preparing image upload...";
+    const signatureResponse = await fetch("/certification-upload/", {
+      method: "POST",
+      headers: headers(),
+      body: JSON.stringify({ contentType: image.type }),
+    });
+    const signatureData = await signatureResponse.json();
+    if (!signatureResponse.ok) throw new Error(signatureData.detail || "Certification upload could not be prepared.");
+
+    const form = new FormData();
+    form.append("file", image);
+    form.append("public_id", signatureData.publicId);
+    form.append("timestamp", signatureData.timestamp);
+    form.append("api_key", signatureData.apiKey);
+    form.append("signature", signatureData.signature);
+    form.append("allowed_formats", signatureData.allowedFormats);
+    if (helper) helper.textContent = "Uploading certificate image...";
+    const uploadResponse = await fetch(signatureData.uploadUrl, { method: "POST", body: form });
+    const uploadData = await uploadResponse.json();
+    if (!uploadResponse.ok) throw new Error(uploadData.error?.message || "Certification image could not be uploaded.");
+
+    card.querySelector('[data-field="image_url"]').value = uploadData.secure_url;
+    if (helper) helper.textContent = "Image upload ready. Save all changes to publish it.";
+  }
+}
+
 async function loadAdmin() {
   const response = await fetch("/admin-data/", { headers: headers(), cache: "no-store" }); const data = await response.json(); if (!response.ok) throw new Error(data.detail || "Admin data could not be loaded.");
   portfolioConfig = { ...data.config, notificationEmails: data.notificationEmails || "" }; renderSite(); Object.entries(data.collections).forEach(([name, items]) => renderCollection(name, items));
@@ -162,6 +213,7 @@ document.querySelector("[data-admin-save]").addEventListener("click", async () =
   try {
     setMessage(status, "Uploading media...");
     await uploadProjectMedia();
+    await uploadCertificationImages();
     await uploadResume();
     const draft = structuredClone(portfolioConfig);
     document.querySelectorAll("[data-admin-site]").forEach((control) => setPath(draft, control.dataset.adminSite, control.value.trim()));

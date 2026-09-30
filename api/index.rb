@@ -589,6 +589,17 @@ def create_project_upload_signature(request)
   media_upload_signature(payload["contentType"], "projects")
 end
 
+def create_certification_upload_signature(request)
+  authorization_error = portfolio_admin_error(request)
+  return authorization_error if authorization_error
+
+  payload = request_body(request)
+  content_type = payload["contentType"].to_s
+  return [{ "detail" => "Upload an image for the certification." }, 400] unless %w[image/jpeg image/png image/webp image/avif].include?(content_type)
+
+  media_upload_signature(content_type, "certifications")
+end
+
 def create_resume_upload_signature(request)
   authorization_error = portfolio_admin_error(request)
   return authorization_error if authorization_error
@@ -720,6 +731,13 @@ Handler = proc do |request, response|
   elsif path == "/project-upload/" || path == "/project-upload"
     if request.request_method == "POST"
       payload, status = create_project_upload_signature(request)
+      json_response(response, payload, status)
+    else
+      json_response(response, { "detail" => "Method not allowed." }, 405)
+    end
+  elsif path == "/certification-upload/" || path == "/certification-upload"
+    if request.request_method == "POST"
+      payload, status = create_certification_upload_signature(request)
       json_response(response, payload, status)
     else
       json_response(response, { "detail" => "Method not allowed." }, 405)
