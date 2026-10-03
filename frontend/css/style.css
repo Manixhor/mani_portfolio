@@ -588,6 +588,7 @@ button.outline-button:disabled {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: clamp(18px, 3vw, 34px);
+  align-items: stretch;
 }
 
 .project-card {
@@ -624,7 +625,7 @@ button.outline-button:disabled {
 
 .project-media {
   position: relative;
-  height: clamp(164px, 11vw, 216px);
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: #f3f3f1;
 }
@@ -634,7 +635,7 @@ button.outline-button:disabled {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   filter: grayscale(0.2) contrast(1.04);
 }
 
@@ -660,20 +661,22 @@ button.outline-button:disabled {
 }
 
 .project-card-content {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 5.04em 8.82em 5.12em auto;
+  align-content: start;
+  gap: 12px;
   padding: 15px 16px 17px;
 }
 
 .project-card h3 {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 1.08rem;
   font-weight: 800;
   line-height: 1.26;
 }
 
 .project-card p {
-  margin: 0 0 12px;
+  margin: 0;
   color: var(--ink);
   font-size: 0.9rem;
   line-height: 1.26;
@@ -681,14 +684,13 @@ button.outline-button:disabled {
 
 .project-card-content > span {
   display: block;
-  margin-bottom: 13px;
+  margin: 0;
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.28;
 }
 
 .project-trigger {
-  margin-top: auto;
   align-self: flex-start;
   padding: 0;
   color: var(--ink);
@@ -2278,15 +2280,17 @@ button.outline-button:disabled {
   }
 
   .project-card p {
-    min-height: auto;
+    min-height: 0;
   }
 
   .project-media {
-    height: clamp(184px, 48vw, 300px);
+    height: auto;
+    aspect-ratio: 16 / 9;
   }
 
   .project-card-content {
     grid-template-rows: auto;
+    gap: 12px;
   }
 
   .project-card h3,
