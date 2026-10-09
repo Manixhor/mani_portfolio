@@ -591,13 +591,15 @@ button.outline-button:disabled {
   align-items: stretch;
 }
 
-.project-actions {
+.project-actions,
+.certification-actions {
   display: flex;
   justify-content: center;
   margin-top: clamp(26px, 4vw, 42px);
 }
 
-.project-actions[hidden] {
+.project-actions[hidden],
+.certification-actions[hidden] {
   display: none;
 }
 

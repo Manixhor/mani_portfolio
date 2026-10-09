@@ -293,10 +293,15 @@ function renderCertifications(certifications = {}) {
   const grid = document.querySelector('[data-render="certifications"]');
   if (!grid) return;
 
-  const items = certifications.items || [];
-  grid.innerHTML = "";
+  const items = Array.isArray(certifications.items) ? certifications.items : [];
+  const actions = document.querySelector("[data-certification-actions]");
+  const toggle = document.querySelector("[data-certification-toggle]");
+  const visibleCertificationCount = 3;
+  let isExpanded = false;
 
   if (!items.length) {
+    if (actions) actions.hidden = true;
+    grid.innerHTML = "";
     const empty = document.createElement("article");
     empty.className = "certification-card certification-card--empty";
     empty.innerHTML = `
@@ -312,7 +317,9 @@ function renderCertifications(certifications = {}) {
     return;
   }
 
-  items.forEach((item) => {
+  const renderItems = (visibleItems) => {
+    grid.innerHTML = "";
+    visibleItems.forEach((item) => {
     const article = document.createElement("article");
     article.className = "certification-card";
     article.innerHTML = `
@@ -342,8 +349,25 @@ function renderCertifications(certifications = {}) {
       link.hidden = true;
     }
 
-    grid.appendChild(article);
+      grid.appendChild(article);
+    });
+  };
+
+  const updateVisibleCertifications = () => {
+    renderItems(isExpanded ? items : items.slice(0, visibleCertificationCount));
+    if (!actions || !toggle) return;
+    const hiddenCount = Math.max(0, items.length - visibleCertificationCount);
+    actions.hidden = hiddenCount === 0;
+    toggle.setAttribute("aria-expanded", String(isExpanded));
+    toggle.textContent = isExpanded ? "Show fewer certifications" : `Show ${hiddenCount} more certification${hiddenCount === 1 ? "" : "s"}`;
+  };
+
+  toggle?.addEventListener("click", () => {
+    isExpanded = !isExpanded;
+    updateVisibleCertifications();
   });
+
+  updateVisibleCertifications();
 }
 
 function renderProjects(projects = {}) {
@@ -817,7 +841,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=36").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=37").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
