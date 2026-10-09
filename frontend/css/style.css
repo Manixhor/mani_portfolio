@@ -2328,7 +2328,9 @@ button.outline-button:disabled {
   }
 
   .certification-card > div {
-    grid-template-rows: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
   }
 
   .certification-card img {
@@ -2341,6 +2343,23 @@ button.outline-button:disabled {
   .certification-card span,
   .certification-description {
     min-height: 0;
+  }
+
+  .certification-date {
+    margin-bottom: 12px;
+  }
+
+  .certification-card h3 {
+    margin-bottom: 8px;
+  }
+
+  .certification-description {
+    margin: 18px 0;
+  }
+
+  .certification-link {
+    align-self: flex-start;
+    margin-top: 0;
   }
 }
 
