@@ -352,8 +352,15 @@ function renderProjects(projects = {}) {
   const grid = document.querySelector('[data-render="projects"]');
   if (!grid) return;
 
-  grid.innerHTML = "";
-  (projects.items || []).forEach((project) => {
+  const projectItems = Array.isArray(projects.items) ? projects.items : [];
+  const actions = document.querySelector("[data-project-actions]");
+  const toggle = document.querySelector("[data-project-toggle]");
+  const visibleProjectCount = 3;
+  let isExpanded = false;
+
+  const renderItems = (items) => {
+    grid.innerHTML = "";
+    items.forEach((project) => {
     const stack = normalizeStack(project);
     const article = document.createElement("article");
     article.className = "project-card";
@@ -413,8 +420,25 @@ function renderProjects(projects = {}) {
       }
     });
 
-    grid.appendChild(article);
+      grid.appendChild(article);
+    });
+  };
+
+  const updateVisibleProjects = () => {
+    renderItems(isExpanded ? projectItems : projectItems.slice(0, visibleProjectCount));
+    if (!actions || !toggle) return;
+    const hiddenCount = Math.max(0, projectItems.length - visibleProjectCount);
+    actions.hidden = hiddenCount === 0;
+    toggle.setAttribute("aria-expanded", String(isExpanded));
+    toggle.textContent = isExpanded ? "Show fewer projects" : `Show ${hiddenCount} more project${hiddenCount === 1 ? "" : "s"}`;
+  };
+
+  toggle?.addEventListener("click", () => {
+    isExpanded = !isExpanded;
+    updateVisibleProjects();
   });
+
+  updateVisibleProjects();
 }
 
 function renderContact(contact = {}, hero = {}) {
@@ -793,7 +817,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=34").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=35").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });

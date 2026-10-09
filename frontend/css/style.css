@@ -591,6 +591,16 @@ button.outline-button:disabled {
   align-items: stretch;
 }
 
+.project-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(26px, 4vw, 42px);
+}
+
+.project-actions[hidden] {
+  display: none;
+}
+
 .project-card {
   display: grid;
   grid-template-rows: auto 1fr;
