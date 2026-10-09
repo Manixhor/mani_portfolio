@@ -355,7 +355,7 @@ function renderProjects(projects = {}) {
   const projectItems = Array.isArray(projects.items) ? projects.items : [];
   const actions = document.querySelector("[data-project-actions]");
   const toggle = document.querySelector("[data-project-toggle]");
-  const visibleProjectCount = 3;
+  const visibleProjectCount = 4;
   let isExpanded = false;
 
   const renderItems = (items) => {
@@ -817,7 +817,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=35").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=36").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
