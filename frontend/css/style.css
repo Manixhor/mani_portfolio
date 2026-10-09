@@ -586,7 +586,7 @@ button.outline-button:disabled {
 
 .project-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(18px, 3vw, 34px);
   align-items: stretch;
 }
@@ -637,7 +637,7 @@ button.outline-button:disabled {
 
 .project-media {
   position: relative;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 16 / 8.2;
   overflow: hidden;
   background: #f3f3f1;
 }
