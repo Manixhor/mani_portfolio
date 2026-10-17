@@ -2988,6 +2988,28 @@ button.outline-button:disabled {
 .article-audio-button:hover { background: var(--ink); color: #fff; }
 .article-audio-button:disabled { cursor: not-allowed; opacity: 0.55; }
 
+/* Preserve the original portfolio-style Blogs header above the editorial feed. */
+.blog-page .blogs-hero {
+  width: 100%;
+  margin: 0;
+  padding: clamp(54px, 9vw, 112px) clamp(24px, 7vw, 84px) clamp(32px, 5vw, 60px);
+  border-bottom: 0;
+}
+.blog-page .blogs-hero h1 {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: clamp(3.5rem, 9vw, 7.5rem);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.82;
+  text-transform: uppercase;
+}
+.blog-page .blogs-hero > div > p:last-child {
+  max-width: 490px;
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
 @media (max-width: 720px) {
   .blog-page .blogs-hero,
   .blog-page .blogs-section { width: min(100% - 32px, 1160px); }
