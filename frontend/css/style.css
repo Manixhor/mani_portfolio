@@ -2891,7 +2891,7 @@ button.outline-button:disabled {
 /* Keep the editorial blog styles after the portfolio styles they intentionally replace. */
 .blog-page,
 .blog-page .portfolio-shell { background: #fff; }
-.blog-page .top-nav { border-bottom: 1px solid #dedbd3; }
+.blog-page .top-nav { border-bottom: 0; }
 .blog-page .blogs-hero {
   align-items: flex-end;
   width: min(1160px, calc(100% - 48px));
