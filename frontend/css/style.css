@@ -556,7 +556,6 @@ a {
 
 .hero-panel {
   padding: 36px 4% 48px;
-  animation: landingFade 0.95s ease both;
 }
 
 .hero-card {
@@ -570,28 +569,32 @@ a {
   text-align: center;
 }
 
-.hero-card > * {
-  animation: fadeLift 0.95s cubic-bezier(0.22, 1, 0.36, 1) both;
+.hero-card.is-entering > * {
+  animation: heroEntrance 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .hero-card .eyebrow {
   animation-delay: 0.12s;
 }
 
-.hero-card h1 {
-  animation-delay: 0.22s;
+.hero-card.is-entering h1 {
+  animation-delay: 0s;
 }
 
-.hero-card .signature {
-  animation-delay: 0.36s;
+.hero-card.is-entering .signature {
+  animation: signatureReveal 2000ms cubic-bezier(0.4, 0, 0.2, 1) 400ms both;
 }
 
-.hero-card .hero-role {
-  animation-delay: 0.48s;
+.hero-card.is-entering .hero-role {
+  animation-delay: 2200ms;
+}
+
+.hero-card.is-entering .year-pill {
+  animation-duration: 450ms;
+  animation-delay: 2450ms;
 }
 
 .hero-card .year-pill {
-  animation-delay: 0.58s;
   min-width: 8.3rem;
   min-height: 3.25rem;
   padding: 0 1.7rem;
@@ -988,18 +991,6 @@ button.outline-button:disabled {
   transform: scale(1.02);
 }
 
-.certification-card.reveal-on-scroll:nth-child(2) {
-  transition-delay: 0.08s;
-}
-
-.certification-card.reveal-on-scroll:nth-child(3) {
-  transition-delay: 0.16s;
-}
-
-.certification-card.reveal-on-scroll:nth-child(4) {
-  transition-delay: 0.24s;
-}
-
 .certification-card.reveal-on-scroll.is-visible:hover {
   transition-delay: 0s;
 }
@@ -1034,15 +1025,34 @@ button.outline-button:disabled {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.blog-card.reveal-on-scroll,
 .reveal-on-scroll {
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(14px);
+  transition: opacity 500ms ease var(--reveal-delay, 0ms), transform 500ms cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
 }
 
 .reveal-on-scroll.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.skill-item.reveal-on-scroll {
+  transition-duration: 400ms;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .skill-item.reveal-on-scroll.is-visible:hover {
+    transform: translateY(-3px);
+  }
+
+  .project-media img {
+    transition: transform 400ms ease;
+  }
+
+  .project-card:hover .project-media img {
+    transform: scale(1.025);
+  }
 }
 
 .project-card:hover {
@@ -1959,11 +1969,24 @@ button.outline-button:disabled {
   background: #fff;
 }
 
-.contact-star-portrait img {
+.portrait-animation {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 560px;
+  aspect-ratio: 600 / 640;
+  pointer-events: none;
+}
+
+.portrait-animation:not([data-ready]) {
+  visibility: hidden;
+}
+
+.contact-star-portrait .portrait-animation {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 525px;
+  justify-self: center;
   object-fit: contain;
 }
 
@@ -2528,6 +2551,16 @@ button.outline-button:disabled {
   }
 }
 
+@keyframes heroEntrance {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes signatureReveal {
+  from { opacity: 0; clip-path: inset(-25% 100% -30% -20%); }
+  to { opacity: 1; clip-path: inset(-25% -20% -30% -20%); }
+}
+
 @keyframes fadeLift {
   from {
     opacity: 0;
@@ -2567,6 +2600,7 @@ button.outline-button:disabled {
   .reveal-on-scroll {
     opacity: 1;
     transform: none;
+    transition-delay: 0ms !important;
   }
 
   .certification-card.reveal-on-scroll {
@@ -2737,7 +2771,7 @@ button.outline-button:disabled {
     box-sizing: border-box;
   }
 
-  .contact-star-portrait img {
+  .contact-star-portrait .portrait-animation {
     max-height: none;
     aspect-ratio: 600 / 640;
   }
@@ -3061,7 +3095,7 @@ button.outline-button:disabled {
   justify-self: end;
 }
 
-.blogs-hero__portrait img {
+.blogs-hero__portrait .portrait-animation {
   display: block;
   width: 100%;
   height: auto;

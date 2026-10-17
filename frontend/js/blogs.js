@@ -130,6 +130,7 @@ async function loadPosts() {
   if (!response.ok) throw new Error("Blogs could not be loaded.");
   const data = await response.json();
   renderPosts(data.items || []);
+  window.revealContent?.(blogGrid);
   setStatus("");
 }
 

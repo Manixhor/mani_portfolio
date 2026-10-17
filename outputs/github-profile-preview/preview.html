@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mani — animation preview</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0d1117;color:#c9d1d9;font:14px system-ui}main{max-width:850px;margin:36px auto;padding:24px}header{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;margin-bottom:30px}h1{font-size:18px;font-weight:500}button{background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:10px 16px;cursor:pointer}.heatmap{display:block;width:100%;height:auto;margin-bottom:32px}.panels{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;justify-content:center}.portrait{flex:1 1 300px;max-width:370px;min-width:0;width:100%;aspect-ratio:600/640;background:#080d14;border-radius:14px;overflow:hidden}.portrait svg{display:block;width:100%;height:auto}.info{flex:1 1 280px;max-width:350px;min-width:0;width:100%;height:auto}p{color:#8b949e;line-height:1.6}@media(max-width:600px){main{margin:16px auto;padding:16px}.panels{flex-direction:column;align-items:center}.portrait,.info{flex:none;max-width:370px}}
+</style>
+<main>
+<header><h1>Portrait animation · sample preview</h1><button id="replay" type="button">Replay animation</button></header>
+<img class="heatmap" src="contrib-heatmap.svg" alt="Contribution heatmap">
+<div class="panels">
+<div class="portrait" role="img" aria-label="White falling stars reveal Mani’s portrait" aria-busy="true"></div>
+<img class="info" src="info-card.svg" alt="Existing experience panel" loading="lazy">
+</div>
+<p id="status" aria-live="polite">Animation starts when the portrait enters view.</p>
+<p>Preview supports scroll-triggered playback. GitHub README images cannot run this scroll detection.</p>
+</main>
+<script type="module" src="viewport-animation.js"></script>
+</html>

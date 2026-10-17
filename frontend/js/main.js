@@ -181,6 +181,16 @@ function renderHero(hero = {}) {
   setPlainText('[data-content="hero-tagline"]', hero.tagline);
   setPlainText('[data-content="hero-year"]', hero.year);
 
+  const card = document.querySelector(".hero-card");
+  if (card && !card.dataset.entrancePlayed) {
+    card.dataset.entrancePlayed = "true";
+    if (!motionQuery.matches) {
+      card.classList.add("is-entering");
+      const year = card.querySelector(".year-pill");
+      year?.addEventListener("animationend", () => card.classList.remove("is-entering"), { once: true });
+    }
+  }
+
   if (hero.name) {
     document.title = `${hero.name} | Portfolio`;
     setMeta('meta[property="og:title"]', `${hero.name} | Portfolio`);
@@ -371,6 +381,7 @@ function renderCertifications(certifications = {}) {
 
   const updateVisibleCertifications = () => {
     renderItems(isExpanded ? items : items.slice(0, visibleCertificationCount));
+    window.revealContent?.(grid);
     if (!actions || !toggle) return;
     const hiddenCount = Math.max(0, items.length - visibleCertificationCount);
     actions.hidden = hiddenCount === 0;
@@ -479,6 +490,7 @@ function renderProjects(projects = {}) {
 
   const updateVisibleProjects = () => {
     renderItems(isExpanded ? projectItems : projectItems.slice(0, visibleProjectCount));
+    window.revealContent?.(grid);
     if (!actions || !toggle) return;
     const hiddenCount = Math.max(0, projectItems.length - visibleProjectCount);
     actions.hidden = hiddenCount === 0;
@@ -554,26 +566,7 @@ function renderPortfolio(config) {
 }
 
 function setupRevealAnimations() {
-  if (motionQuery.matches) return;
-
-  const revealItems = document.querySelectorAll(
-    ".split-panel, .experience-card, .skills-grid, .project-card, .contact-panel"
-  );
-
-  revealItems.forEach((item) => item.classList.add("reveal-on-scroll"));
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add("is-visible");
-        observer.unobserve(entry.target);
-      });
-    },
-    { threshold: 0.15 }
-  );
-
-  revealItems.forEach((item) => observer.observe(item));
+  window.revealContent?.();
 }
 
 const projectModal = document.getElementById("project-modal");
@@ -870,7 +863,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=51").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=56").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });

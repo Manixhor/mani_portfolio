@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css?v=45" />
+  <link rel="stylesheet" href="/static/css/style.css?v=50" />
 </head>
 <body class="blog-page">
   <main class="portfolio-shell">
@@ -37,7 +37,7 @@
         <p>Things I am learning, building, and figuring out along the way.</p>
       </div>
       <aside class="blogs-hero__portrait">
-        <img src="/static/images/mani-star-portrait.svg?v=3" width="600" height="640" alt="Animated star portrait of Mani" />
+        <object class="portrait-animation" data-portrait-animation data="/static/images/mani-star-portrait.svg?v=3" type="image/svg+xml" width="600" height="640" role="img" aria-label="Animated star portrait of Mani"></object>
       </aside>
       <button class="add-blog-button" type="button" data-open-blog-form hidden aria-label="Write a new post" title="Write a new post"><span aria-hidden="true">+</span> Write</button>
     </section>
@@ -84,7 +84,8 @@
       <form data-chatbot-form><div class="chatbot-widget__messages" data-chatbot-messages role="log" aria-live="polite"></div><div class="chatbot-widget__choices" data-chatbot-choices></div><label class="sr-only" data-chatbot-input-label></label><div class="chatbot-widget__composer"><div data-chatbot-input-slot></div><button type="submit" data-chatbot-submit hidden>Next</button></div><p class="chatbot-widget__status" data-chatbot-status aria-live="polite"></p></form>
     </section>
   </aside>
-  <script src="/blogs.js?v=10"></script>
+  <script src="/static/js/reveal.js?v=2"></script>
+  <script src="/blogs.js?v=11"></script>
   <script src="/chat-widget.js?v=4"></script>
 </body>
 </html>

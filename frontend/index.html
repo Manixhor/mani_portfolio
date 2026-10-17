@@ -25,7 +25,7 @@
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/static/icons/icon.svg" />
-  <link rel="stylesheet" href="/static/css/style.css?v=45" />
+  <link rel="stylesheet" href="/static/css/style.css?v=50" />
 </head>
 <body>
   <div id="progress-bar" aria-hidden="true"></div>
@@ -121,7 +121,7 @@
 
       </div>
       <aside class="contact-star-portrait">
-        <img src="/static/images/mani-star-portrait.svg?v=3" alt="Animated star portrait of Mani" />
+        <object class="portrait-animation" data-portrait-animation data="/static/images/mani-star-portrait.svg?v=3" type="image/svg+xml" width="600" height="640" role="img" aria-label="Animated star portrait of Mani"></object>
       </aside>
 
     </section>
@@ -194,7 +194,8 @@
     </section>
   </aside>
 
-  <script src="/app.js?v=27"></script>
+  <script src="/static/js/reveal.js?v=2"></script>
+  <script src="/app.js?v=29"></script>
   <script src="/chat-widget.js?v=4"></script>
 </body>
 </html>
