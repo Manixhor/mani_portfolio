@@ -2918,6 +2918,8 @@ button.outline-button:disabled {
 .blog-feed-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
 .blog-feed-heading h2 { margin: 0; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
 .blog-feed-heading p { margin: 0; color: #706d67; font-size: 0.8rem; }
+.blog-page .blog-status { display: none; }
+.blog-page .blog-status.is-error { display: block; }
 .blog-page .blog-status[hidden] { display: none !important; }
 .blog-page .blog-grid { width: 100%; margin: 0; gap: 38px; }
 .blog-page .blog-card { overflow: visible; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
