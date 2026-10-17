@@ -19,11 +19,23 @@ if (chatbot) {
   ];
   let answers = {};
   let index = 0;
+  let closeTimer;
 
   function closeConversation() {
+    if (windowPanel.hidden || chatbot.classList.contains("is-closing")) return;
     chatbot.classList.remove("is-open");
-    windowPanel.hidden = true;
-    launcher.hidden = false;
+    chatbot.classList.add("is-closing");
+    window.clearTimeout(closeTimer);
+    closeTimer = window.setTimeout(() => {
+      windowPanel.hidden = true;
+      chatbot.classList.remove("is-closing");
+      launcher.hidden = false;
+      launcher.focus({ preventScroll: true });
+    }, motionReduced() ? 0 : 220);
+  }
+
+  function motionReduced() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
 
   function revealAfterAbout() {
@@ -51,7 +63,9 @@ if (chatbot) {
   function addMessage(text, author = "assistant") {
     const bubble = document.createElement("p");
     bubble.className = `chatbot-widget__message chatbot-widget__message--${author}`;
-    bubble.textContent = text;
+    bubble.textContent = author === "assistant"
+      ? String(text || "").replace(/\s*(?:[\u2013\u2014]|--+)\s*/g, " ").replace(/\s+/g, " ").trim()
+      : text;
     messages.appendChild(bubble);
     messages.scrollTop = messages.scrollHeight;
   }
@@ -120,6 +134,8 @@ if (chatbot) {
   }
 
   function startConversation() {
+    window.clearTimeout(closeTimer);
+    chatbot.classList.remove("is-closing");
     answers = {};
     index = 0;
     messages.innerHTML = "";

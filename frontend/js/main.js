@@ -42,6 +42,22 @@ function cleanProjectUrl(value) {
   return "";
 }
 
+function projectPreviewUrl(value, width) {
+  try {
+    const url = new URL(value, window.location.origin);
+    if (url.hostname === "res.cloudinary.com" && /\/image\/upload\/v\d+\//.test(url.pathname)) {
+      url.pathname = url.pathname.replace("/image/upload/", `/image/upload/f_auto,q_auto,w_${width},c_limit/`);
+    } else if (url.hostname === "images.unsplash.com") {
+      url.searchParams.set("w", String(width));
+      url.searchParams.set("q", "75");
+      url.searchParams.set("auto", "format");
+    }
+    return url.href;
+  } catch {
+    return value || "";
+  }
+}
+
 function setImageWithFallback(image, src, fallbackSrc) {
   image.onerror = () => {
     if (image.src !== fallbackSrc) {
@@ -384,7 +400,7 @@ function renderProjects(projects = {}) {
 
   const renderItems = (items) => {
     grid.innerHTML = "";
-    items.forEach((project) => {
+    items.forEach((project, index) => {
     const stack = normalizeStack(project);
     const article = document.createElement("article");
     article.className = "project-card";
@@ -412,12 +428,25 @@ function renderProjects(projects = {}) {
       mediaElement.playsInline = true;
       mediaElement.preload = "metadata";
     } else {
-      mediaElement.loading = "lazy";
+      mediaElement.loading = index < visibleProjectCount ? "eager" : "lazy";
+      mediaElement.decoding = "async";
       mediaElement.referrerPolicy = "no-referrer";
-      mediaElement.src = project.imageUrl || "";
+      const original = project.imageUrl || "";
+      const preview = original ? projectPreviewUrl(original, 720) : "";
+      if (original && preview !== original) {
+        mediaElement.srcset = [480, 720, 1080].map((width) => `${projectPreviewUrl(original, width)} ${width}w`).join(", ");
+        mediaElement.sizes = "(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw";
+      }
+      mediaElement.src = preview;
       mediaElement.alt = plainText(project.imageAlt) || `${plainText(project.name) || "Project"} preview`;
     }
     mediaElement.addEventListener("error", () => {
+      if (!project.videoUrl && !mediaElement.dataset.originalRetried && project.imageUrl) {
+        mediaElement.dataset.originalRetried = "true";
+        mediaElement.removeAttribute("srcset");
+        mediaElement.src = project.imageUrl;
+        return;
+      }
       media.classList.add("is-unavailable");
     });
     media.prepend(mediaElement);
@@ -841,7 +870,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=42").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=48").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });

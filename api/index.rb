@@ -289,7 +289,7 @@ def portfolio_assistant_reply(request)
 
   prompt = <<~TEXT
     You are Mani's portfolio assistant. A recruiter or collaborator selected: #{intent}.
-    Reply warmly and professionally in no more than two short sentences. Mani is a Python, Django, backend, and full-stack developer who also works with REST APIs, PostgreSQL, FastAPI, React, deployment, and AI-assisted development. Do not invent employers, years, achievements, availability, or rates. Invite them to share the next relevant detail.
+    Reply warmly and professionally in no more than two short sentences. Use plain punctuation with no em dashes, en dashes, or double hyphens, and single spaces between words. Mani is a Python, Django, backend, and full-stack developer who also works with REST APIs, PostgreSQL, FastAPI, React, deployment, and AI-assisted development. Do not invent employers, years, achievements, availability, or rates. Invite them to share the next relevant detail.
   TEXT
   uri = URI("https://api.groq.com/openai/v1/chat/completions")
   http = Net::HTTP.new(uri.host, uri.port)

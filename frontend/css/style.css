@@ -1947,20 +1947,24 @@ button.outline-button:disabled {
 .contact-panel {
   grid-template-columns: minmax(0, 0.86fr) minmax(360px, 0.74fr);
   min-height: 560px;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
   border-bottom: 0;
 }
 
 .contact-star-portrait {
   display: grid;
-  min-height: 560px;
+  align-self: start;
+  min-height: 0;
   overflow: hidden;
   background: #fff;
 }
 
 .contact-star-portrait img {
+  display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  max-height: 560px;
+  object-fit: contain;
 }
 
 .contact-list {
@@ -2301,6 +2305,16 @@ button.outline-button:disabled {
 
 .chatbot-widget__window[hidden] {
   display: none;
+}
+
+.chatbot-widget.is-closing .chatbot-widget__window {
+  pointer-events: none;
+  animation: chatbotClose 220ms ease-in both;
+}
+
+@keyframes chatbotClose {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(12px) scale(0.98); }
 }
 
 .chatbot-widget__window header {
@@ -2716,7 +2730,11 @@ button.outline-button:disabled {
   }
 
   .contact-star-portrait {
-    min-height: 430px;
+    min-height: 0;
+  }
+
+  .contact-star-portrait img {
+    max-height: 430px;
   }
 
   .contact-chat {
