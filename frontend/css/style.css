@@ -2930,7 +2930,15 @@ button.outline-button:disabled {
 .blog-page .blog-card__media--empty { position: relative; background: #e9e6dd; }
 .blog-page .blog-card__media--empty::after { position: absolute; top: 50%; left: 50%; color: #77736b; content: "Mani's notebook"; font-family: "DM Serif Display", Georgia, serif; font-size: 1.3rem; transform: translate(-50%, -50%); white-space: nowrap; }
 .blog-page .blog-card img,
-.blog-page .blog-card video { display: block; width: 100%; height: 100%; aspect-ratio: auto; object-fit: cover; }
+.blog-page .blog-card video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.18);
+}
 .blog-page .blog-card h2 { max-width: 710px; margin: 0; font-family: "DM Serif Display", Georgia, serif; font-size: clamp(1.75rem, 3.2vw, 2.65rem); font-weight: 400; line-height: 1.02; }
 .blog-page .blog-card__meta { margin: 0 0 12px; color: #706d67; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.02em; text-transform: none; }
 .blog-page .blog-card__subheader { max-width: 680px; margin: 14px 0 0; color: #3f3c37; font-size: 1rem; font-weight: 600; line-height: 1.42; }
