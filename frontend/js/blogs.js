@@ -32,66 +32,93 @@ function excerpt(value) {
   return text.length > 220 ? `${text.slice(0, 217).trimEnd()}...` : text;
 }
 
+function readingTime(value) {
+  const words = String(value || "").trim().split(/\s+/).filter(Boolean).length;
+  return `${Math.max(1, Math.ceil(words / 200))} min read`;
+}
+
+function appendMedia(container, post) {
+  if (post.imageUrl) {
+    const image = document.createElement("img");
+    image.src = post.imageUrl;
+    image.alt = post.header || "Blog image";
+    image.loading = "lazy";
+    image.addEventListener("error", () => container.classList.add("blog-card__media--empty"));
+    container.appendChild(image);
+  } else if (post.videoUrl) {
+    const video = document.createElement("video");
+    video.src = post.videoUrl;
+    video.muted = true;
+    video.preload = "metadata";
+    video.playsInline = true;
+    container.appendChild(video);
+  } else {
+    container.classList.add("blog-card__media--empty");
+  }
+}
+
+function createPostCard(post, featured = false) {
+  const article = document.createElement("article");
+  article.className = `blog-card${featured ? " blog-card--featured" : ""}`;
+  const link = document.createElement("a");
+  link.className = "blog-card__surface";
+  link.href = `/blogs/${post.id}/`;
+
+  const body = document.createElement("div");
+  body.className = "blog-card__body";
+  const meta = document.createElement("p");
+  meta.className = "blog-card__meta";
+  meta.textContent = `Mani Gururam  ·  ${formatDate(post.createdAt)}  ·  ${readingTime(post.description)}`;
+  const header = document.createElement("h2");
+  header.textContent = post.header || "Untitled";
+  const subheader = document.createElement("p");
+  subheader.className = "blog-card__subheader";
+  subheader.textContent = post.subheader || "";
+  const description = document.createElement("p");
+  description.className = "blog-card__description";
+  description.textContent = excerpt(post.description);
+  const readingCue = document.createElement("span");
+  readingCue.className = "blog-card__link";
+  readingCue.textContent = "Read story";
+  body.append(meta, header, subheader, description, readingCue);
+
+  const media = document.createElement("div");
+  media.className = "blog-card__media";
+  appendMedia(media, post);
+  if (featured) {
+    link.append(body, media);
+  } else {
+    link.append(body, media);
+  }
+  article.appendChild(link);
+  if (adminMode) {
+    const editButton = document.createElement("button");
+    editButton.type = "button";
+    editButton.className = "blog-card__edit";
+    editButton.textContent = "Edit";
+    editButton.addEventListener("click", () => openBlogForm(post));
+    article.appendChild(editButton);
+  }
+  return article;
+}
+
 function renderPosts(items) {
   if (!blogGrid) return;
   blogGrid.innerHTML = "";
+
+  const count = document.querySelector("[data-blog-count]");
+  if (count) count.textContent = items.length ? `${items.length} ${items.length === 1 ? "story" : "stories"}` : "";
 
   if (!items.length) {
     blogGrid.innerHTML = '<p class="blog-empty">No posts yet.</p>';
     return;
   }
 
-  items.forEach((post) => {
-    const article = document.createElement("article");
-    article.className = "blog-card";
-    const link = document.createElement("a");
-    link.className = "blog-card__surface";
-    link.href = `/blogs/${post.id}/`;
-
-    if (post.imageUrl) {
-      const image = document.createElement("img");
-      image.src = post.imageUrl;
-      image.alt = post.header || "Blog image";
-      image.loading = "lazy";
-      image.addEventListener("error", () => image.remove());
-      link.appendChild(image);
-    } else if (post.videoUrl) {
-      const video = document.createElement("video");
-      video.src = post.videoUrl;
-      video.muted = true;
-      video.preload = "metadata";
-      video.playsInline = true;
-      link.appendChild(video);
-    }
-
-    const body = document.createElement("div");
-    const meta = document.createElement("p");
-    const header = document.createElement("h2");
-    const subheader = document.createElement("p");
-    const description = document.createElement("p");
-    meta.className = "blog-card__meta";
-    meta.textContent = formatDate(post.createdAt);
-    header.textContent = post.header || "Untitled";
-    subheader.className = "blog-card__subheader";
-    subheader.textContent = post.subheader || "";
-    description.className = "blog-card__description";
-    description.textContent = excerpt(post.description);
-    const readingCue = document.createElement("span");
-    readingCue.className = "blog-card__link";
-    readingCue.textContent = "Read article";
-    body.append(meta, header, subheader, description, readingCue);
-    link.appendChild(body);
-    article.appendChild(link);
-    if (adminMode) {
-      const editButton = document.createElement("button");
-      editButton.type = "button";
-      editButton.className = "blog-card__edit";
-      editButton.textContent = "Edit";
-      editButton.addEventListener("click", () => openBlogForm(post));
-      article.appendChild(editButton);
-    }
-    blogGrid.appendChild(article);
-  });
+  blogGrid.appendChild(createPostCard(items[0], true));
+  const stream = document.createElement("div");
+  stream.className = "blog-stream";
+  items.slice(1).forEach((post) => stream.appendChild(createPostCard(post)));
+  if (stream.childElementCount) blogGrid.appendChild(stream);
 }
 
 async function loadPosts() {

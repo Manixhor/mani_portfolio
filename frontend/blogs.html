@@ -8,8 +8,8 @@
   <title>Blogs | Mani</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Great+Vibes&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css?v=27" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css?v=32" />
 </head>
 <body class="blog-page">
   <main class="portfolio-shell">
@@ -30,16 +30,17 @@
     </nav>
 
     <section class="blogs-hero">
-      <div>
-        <p class="blogs-kicker">Notes from Mani</p>
-        <h1>Blogs</h1>
-        <p>Things I am learning, building, and figuring out along the way.</p>
+      <div class="blogs-hero__copy">
+        <p class="blogs-kicker">Mani's notebook</p>
+        <h1>Ideas from the work.</h1>
+        <p>Practical notes on building software, learning in public, and solving problems that matter.</p>
       </div>
-      <button class="add-blog-button" type="button" data-open-blog-form hidden aria-label="Add blog post" title="Add blog post">+</button>
+      <button class="add-blog-button" type="button" data-open-blog-form hidden aria-label="Write a new post" title="Write a new post"><span aria-hidden="true">+</span> Write</button>
     </section>
 
     <section class="blogs-section" aria-live="polite">
       <p class="blog-status" data-blog-status></p>
+      <div class="blog-feed-heading"><h2>Latest writing</h2><p data-blog-count></p></div>
       <div class="blog-grid" data-blog-grid></div>
     </section>
   </main>

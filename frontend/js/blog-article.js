@@ -8,6 +8,11 @@ function articleText(value) {
   return String(value || "").trim();
 }
 
+function readingTime(value) {
+  const words = articleText(value).split(/\s+/).filter(Boolean).length;
+  return `${Math.max(1, Math.ceil(words / 200))} min read`;
+}
+
 navToggle?.addEventListener("click", () => {
   const isOpen = nav?.classList.toggle("is-open");
   navToggle.setAttribute("aria-expanded", String(isOpen));
@@ -32,6 +37,7 @@ async function loadArticle() {
   document.querySelector("[data-article-date]").textContent = post.createdAt
     ? new Intl.DateTimeFormat("en", { day: "numeric", month: "long", year: "numeric" }).format(new Date(post.createdAt))
     : "";
+  document.querySelector("[data-article-reading-time]").textContent = readingTime(post.description);
 
   const media = document.querySelector("[data-article-media]");
   if (post.imageUrl) {
