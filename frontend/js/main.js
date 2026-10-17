@@ -668,30 +668,16 @@ function closeSkillModal() {
 const resumeModal = document.getElementById("resume-modal");
 const resumeDialog = resumeModal?.querySelector(".resume-modal__dialog");
 const resumeFrame = resumeModal?.querySelector("[data-resume-frame]");
-const resumeStage = resumeModal?.querySelector("[data-resume-stage]");
 const resumeOpenLink = resumeModal?.querySelector("[data-resume-open]");
-const resumeZoomValue = resumeModal?.querySelector("[data-resume-zoom-value]");
-let resumeZoom = 1;
 
 function previewableResumeUrl(url) {
   const driveFile = url.match(/^https?:\/\/drive\.google\.com\/file\/d\/([^/?]+)/i);
   return driveFile ? `https://drive.google.com/file/d/${driveFile[1]}/preview` : url;
 }
 
-function updateResumeZoom() {
-  if (!resumeStage || !resumeZoomValue) return;
-
-  resumeStage.style.setProperty("--resume-zoom", String(resumeZoom));
-  const value = `${Math.round(resumeZoom * 100)}%`;
-  resumeZoomValue.value = value;
-  resumeZoomValue.textContent = value;
-}
-
 function openResumePreview(url) {
   if (!resumeModal || !resumeDialog || !resumeFrame || !resumeOpenLink || !url) return;
 
-  resumeZoom = 1;
-  updateResumeZoom();
   resumeOpenLink.href = url;
   resumeFrame.src = previewableResumeUrl(url);
   resumeModal.classList.add("is-open");
@@ -709,19 +695,9 @@ function closeResumePreview() {
 
 function setupResumePreview() {
   const resumeTrigger = document.querySelector('[data-content="resume-link"]');
-  const zoomOut = resumeModal?.querySelector("[data-resume-zoom-out]");
-  const zoomIn = resumeModal?.querySelector("[data-resume-zoom-in]");
-  if (!resumeTrigger || !zoomOut || !zoomIn) return;
+  if (!resumeTrigger) return;
 
   resumeTrigger.addEventListener("click", () => openResumePreview(resumeTrigger.dataset.resumeUrl));
-  zoomOut.addEventListener("click", () => {
-    resumeZoom = Math.max(0.8, Number((resumeZoom - 0.2).toFixed(1)));
-    updateResumeZoom();
-  });
-  zoomIn.addEventListener("click", () => {
-    resumeZoom = Math.min(1.8, Number((resumeZoom + 0.2).toFixed(1)));
-    updateResumeZoom();
-  });
 }
 
 function setContactStatus(message, type = "") {
@@ -863,7 +839,7 @@ function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js?v=56").catch((error) => {
+    navigator.serviceWorker.register("/sw.js?v=57").catch((error) => {
       console.error("Service worker registration failed.", error);
     });
   });
