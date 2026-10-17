@@ -19,6 +19,7 @@ const maxVideoBytes = 50 * 1024 * 1024;
 function setStatus(message, isError = false) {
   if (!blogStatus) return;
   blogStatus.textContent = message;
+  blogStatus.hidden = !message;
   blogStatus.classList.toggle("is-error", isError);
 }
 
@@ -104,6 +105,7 @@ function createPostCard(post, featured = false) {
 
 function renderPosts(items) {
   if (!blogGrid) return;
+  setStatus("");
   blogGrid.innerHTML = "";
 
   const count = document.querySelector("[data-blog-count]");
