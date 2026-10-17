@@ -2960,6 +2960,25 @@ button.outline-button:disabled {
 .article-page .article-body { max-width: 680px; }
 .article-page .article-body p { color: #292824; font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.14rem, 2vw, 1.28rem); line-height: 1.75; }
 .article-page .article-body h2 { font-family: "DM Serif Display", Georgia, serif; font-size: clamp(1.8rem, 3.4vw, 2.45rem); font-weight: 400; }
+.article-reading-tools { margin-top: 24px; }
+.article-audio-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 0 15px;
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.article-audio-button:hover { background: var(--ink); color: #fff; }
+.article-audio-button:disabled { cursor: not-allowed; opacity: 0.55; }
 
 @media (max-width: 720px) {
   .blog-page .blogs-hero,

@@ -71,7 +71,7 @@ function createPostCard(post, featured = false) {
   body.className = "blog-card__body";
   const meta = document.createElement("p");
   meta.className = "blog-card__meta";
-  meta.textContent = `Mani Gururam  ·  ${formatDate(post.createdAt)}  ·  ${readingTime(post.description)}`;
+  meta.textContent = `Mani  ·  ${formatDate(post.createdAt)}  ·  ${readingTime(post.description)}`;
   const header = document.createElement("h2");
   header.textContent = post.header || "Untitled";
   const subheader = document.createElement("p");
@@ -126,7 +126,6 @@ function renderPosts(items) {
 }
 
 async function loadPosts() {
-  setStatus("Loading posts...");
   const response = await fetch(`/blog-data/?_=${Date.now()}`, { cache: "no-store" });
   if (!response.ok) throw new Error("Blogs could not be loaded.");
   const data = await response.json();
