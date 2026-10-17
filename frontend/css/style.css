@@ -1945,9 +1945,22 @@ button.outline-button:disabled {
 }
 
 .contact-panel {
-  grid-template-columns: minmax(0, 720px);
-  min-height: 0;
+  grid-template-columns: minmax(0, 0.86fr) minmax(360px, 0.74fr);
+  min-height: 560px;
   border-bottom: 0;
+}
+
+.contact-star-portrait {
+  display: grid;
+  min-height: 560px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.contact-star-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .contact-list {
@@ -2700,6 +2713,10 @@ button.outline-button:disabled {
   .about-image {
     border-left: 0;
     border-top: 0;
+  }
+
+  .contact-star-portrait {
+    min-height: 430px;
   }
 
   .contact-chat {
