@@ -19,7 +19,9 @@ const maxVideoBytes = 50 * 1024 * 1024;
 function setStatus(message, isError = false) {
   if (!blogStatus) return;
   blogStatus.textContent = message;
-  blogStatus.hidden = !message;
+  const hasMessage = Boolean(message);
+  blogStatus.hidden = !hasMessage;
+  blogStatus.style.display = hasMessage ? "" : "none";
   blogStatus.classList.toggle("is-error", isError);
 }
 
