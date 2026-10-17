@@ -485,7 +485,10 @@ a {
   margin: 0 auto 28px;
   border: 0;
   border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  /* clip keeps the corner clipping but does NOT create a scroll container,
+     so the sticky top-nav keeps working while the page scrolls. */
   overflow: hidden;
+  overflow: clip;
   background: var(--white);
   box-shadow: none;
 }
