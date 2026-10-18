@@ -37,8 +37,17 @@ function renderSite() {
   });
 }
 
-function renderCollection(name, items) {
-  const container = document.querySelector(`[data-admin-collection="${name}"]`); container.innerHTML = "";
+function projectCategory(item) {
+  if (["live", "engineering"].includes(item.category)) return item.category;
+  return (item.show_live_url === true || item.show_live_url === "t") && item.live_url?.trim() ? "live" : "engineering";
+}
+
+function renderCollection(name, items, append = false) {
+  const container = name === "projects" ? null : document.querySelector(`[data-admin-collection="${name}"]`);
+  if (!append) {
+    if (container) container.innerHTML = "";
+    else document.querySelectorAll("[data-admin-project-group]").forEach((group) => group.replaceChildren());
+  }
   items.forEach((item) => {
     const card = document.createElement("article"); card.className = "admin-item"; card.dataset.adminItem = name; card.dataset.id = item.id || "";
     const remove = document.createElement("button"); remove.type = "button"; remove.className = "admin-remove"; remove.textContent = "Remove"; remove.addEventListener("click", () => card.remove()); card.appendChild(remove);
@@ -47,13 +56,16 @@ function renderCollection(name, items) {
       if (type === "select") {
         const select = document.createElement("select");
         select.dataset.field = key;
-        [["", "Automatic (based on live link)"], ["live", "Live Projects"], ["engineering", "Engineering Projects"]].forEach(([value, text]) => {
+        [["live", "Live Projects"], ["engineering", "Engineering Projects"]].forEach(([value, text]) => {
           const option = document.createElement("option");
           option.value = value;
           option.textContent = text;
           select.appendChild(option);
         });
-        select.value = item[key] || "";
+        select.value = projectCategory(item);
+        select.addEventListener("change", () => {
+          document.querySelector(`[data-admin-project-group="${select.value}"]`).appendChild(card);
+        });
         field.appendChild(select);
         card.appendChild(field);
         return;
@@ -63,7 +75,8 @@ function renderCollection(name, items) {
     });
     if (name === "projects") renderProjectMediaUpload(card);
     if (name === "certifications") renderCertificationImageUpload(card);
-    container.appendChild(card);
+    const target = container || document.querySelector(`[data-admin-project-group="${projectCategory(item)}"]`);
+    target.appendChild(card);
   });
 }
 
@@ -223,7 +236,14 @@ async function loadAdmin() {
 }
 
 document.querySelector("[data-admin-login-form]").addEventListener("submit", async (event) => { event.preventDefault(); adminPassword = passwordInput.value; try { await loadAdmin(); login.hidden = true; dashboard.hidden = false; } catch (error) { adminPassword = ""; setMessage(loginStatus, error.message, true); } });
-document.querySelectorAll("[data-admin-add]").forEach((button) => button.addEventListener("click", () => { const name = button.dataset.adminAdd; renderCollection(name, [...collectionValues(name), { ...blankItems[name], order: collectionValues(name).length + 1 }]); }));
+document.querySelectorAll("[data-admin-add]").forEach((button) => button.addEventListener("click", () => {
+  const name = button.dataset.adminAdd;
+  const items = collectionValues(name);
+  const category = button.dataset.projectCategory;
+  const groupItems = category ? items.filter((item) => projectCategory(item) === category) : items;
+  const order = Math.max(0, ...groupItems.map((item) => Number(item.order) || 0)) + 1;
+  renderCollection(name, [{ ...blankItems[name], ...(category ? { category } : {}), order }], true);
+}));
 document.querySelector("[data-admin-save]").addEventListener("click", async () => {
   try {
     setMessage(status, "Uploading media...");
