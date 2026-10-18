@@ -101,7 +101,16 @@ async function loadArticle() {
     const nextLine = lines[index + 1] || "";
     const isSectionHeading = line.length < 80 && !/[.:!?]$/.test(line) && nextLine.length > line.length + 25;
     const element = document.createElement(isSectionHeading ? "h2" : "p");
-    element.textContent = line;
+    if (/^https?:\/\/\S+$/.test(line)) {
+      const link = document.createElement("a");
+      link.href = line;
+      link.textContent = new URL(line).hostname;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      element.appendChild(link);
+    } else {
+      element.textContent = line;
+    }
     body.appendChild(element);
   });
 }
