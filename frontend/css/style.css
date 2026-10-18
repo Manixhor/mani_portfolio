@@ -998,6 +998,16 @@ button.outline-button:disabled {
   transition-delay: 0s;
 }
 
+.project-group + .project-group {
+  margin-top: 56px;
+}
+
+.project-group-heading {
+  margin: 0 0 24px;
+  font-size: 24px;
+  line-height: 1.3;
+}
+
 .project-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1232,7 +1242,7 @@ button.outline-button:disabled {
 .admin-login h1, .admin-dashboard h1, .admin-section h2 { margin: 0; }
 .admin-login form { display: grid; gap: 16px; margin-top: 28px; }
 .admin-login label, .admin-section label { display: grid; gap: 8px; font-weight: 700; }
-.admin-login input, .admin-section input, .admin-section textarea { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 12px; background: var(--white); color: var(--ink); font: inherit; }
+.admin-login input, .admin-section input, .admin-section textarea, .admin-section select { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 6px; padding: 12px; background: var(--white); color: var(--ink); font: inherit; }
 .admin-login button, .admin-dashboard__heading > button, .admin-section__header > button { min-height: 42px; border: 1px solid var(--ink); border-radius: 6px; padding: 0 16px; background: var(--ink); color: var(--white); font: inherit; font-weight: 700; cursor: pointer; }
 .admin-dashboard { display: grid; gap: 20px; }
 .admin-status, [data-admin-login-status] { min-height: 1.25rem; margin: 0; color: #197048; font-weight: 600; }

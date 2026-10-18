@@ -400,16 +400,13 @@ function renderCertifications(certifications = {}) {
 function renderProjects(projects = {}) {
   setSectionTitle('[data-content="projects-label"]', '[data-content="projects-heading"]', projects.sectionLabel, projects.heading);
 
-  const grid = document.querySelector('[data-render="projects"]');
-  if (!grid) return;
+  const container = document.querySelector('[data-render="projects"]');
+  if (!container) return;
 
   const projectItems = Array.isArray(projects.items) ? projects.items : [];
-  const actions = document.querySelector("[data-project-actions]");
-  const toggle = document.querySelector("[data-project-toggle]");
   const visibleProjectCount = 3;
-  let isExpanded = false;
 
-  const renderItems = (items) => {
+  const renderItems = (grid, items) => {
     grid.innerHTML = "";
     items.forEach((project, index) => {
     const stack = normalizeStack(project);
@@ -488,22 +485,54 @@ function renderProjects(projects = {}) {
     });
   };
 
-  const updateVisibleProjects = () => {
-    renderItems(isExpanded ? projectItems : projectItems.slice(0, visibleProjectCount));
-    window.revealContent?.(grid);
-    if (!actions || !toggle) return;
-    const hiddenCount = Math.max(0, projectItems.length - visibleProjectCount);
-    actions.hidden = hiddenCount === 0;
-    toggle.setAttribute("aria-expanded", String(isExpanded));
-    toggle.textContent = isExpanded ? "Show fewer projects" : `Show ${hiddenCount} more project${hiddenCount === 1 ? "" : "s"}`;
+  container.replaceChildren();
+  const hasLiveApp = (project) => {
+    if (project.category === "live") return true;
+    if (project.category === "engineering") return false;
+    return Boolean(cleanProjectUrl(project.liveUrl));
   };
+  const groups = [
+    { title: "Live Projects", items: projectItems.filter(hasLiveApp) },
+    { title: "Engineering Projects", items: projectItems.filter((project) => !hasLiveApp(project)) },
+  ];
+  groups.forEach(({ title, items }, index) => {
+    if (!items.length) return;
+    const section = document.createElement("section");
+    section.className = "project-group";
+    const heading = document.createElement("h3");
+    heading.id = `project-group-${index}`;
+    heading.className = "project-group-heading";
+    heading.textContent = title;
+    section.setAttribute("aria-labelledby", heading.id);
+    const grid = document.createElement("div");
+    grid.className = "project-grid";
+    grid.id = `project-grid-${index}`;
+    const actions = document.createElement("div");
+    actions.className = "project-actions";
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "outline-button";
+    toggle.setAttribute("aria-controls", grid.id);
+    actions.appendChild(toggle);
+    section.append(heading, grid, actions);
+    container.appendChild(section);
+    let isExpanded = false;
+    const updateVisibleProjects = () => {
+      renderItems(grid, isExpanded ? items : items.slice(0, visibleProjectCount));
+      window.revealContent?.(grid);
+      const hiddenCount = Math.max(0, items.length - visibleProjectCount);
+      actions.hidden = hiddenCount === 0;
+      toggle.setAttribute("aria-expanded", String(isExpanded));
+      toggle.textContent = isExpanded ? "Show fewer projects" : `Show ${hiddenCount} more project${hiddenCount === 1 ? "" : "s"}`;
+    };
 
-  toggle?.addEventListener("click", () => {
-    isExpanded = !isExpanded;
+    toggle.addEventListener("click", () => {
+      isExpanded = !isExpanded;
+      updateVisibleProjects();
+    });
+
     updateVisibleProjects();
   });
-
-  updateVisibleProjects();
 }
 
 function renderContact(contact = {}, hero = {}) {

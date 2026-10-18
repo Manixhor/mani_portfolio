@@ -131,13 +131,14 @@ def portfolio_config
 
   projects = json_value(config["projects"])
   projects["items"] = database.exec(<<~SQL).map do |item|
-    SELECT name, description, brief, stack, live_url, show_live_url, github_url, show_github_url, blog_url, image, image_url, video_url, image_alt
+    SELECT name, category, description, brief, stack, live_url, show_live_url, github_url, show_github_url, blog_url, image, image_url, video_url, image_alt
     FROM portfolio_data_projectitem
     WHERE is_visible = TRUE
     ORDER BY "order" ASC, id DESC
   SQL
     {
       "name" => item["name"],
+      "category" => item["category"].to_s,
       "description" => item["description"].to_s,
       "brief" => item["brief"].to_s,
       "stack" => item["stack"].to_s,
@@ -168,6 +169,7 @@ def ensure_project_blog_column
 
   database.exec("ALTER TABLE portfolio_data_projectitem ADD COLUMN IF NOT EXISTS blog_url TEXT NOT NULL DEFAULT ''")
   database.exec("ALTER TABLE portfolio_data_projectitem ADD COLUMN IF NOT EXISTS video_url TEXT NOT NULL DEFAULT ''")
+  database.exec("ALTER TABLE portfolio_data_projectitem ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT ''")
   @project_blog_column_ready = true
 end
 
@@ -484,7 +486,7 @@ def portfolio_admin_data(request)
   collections = {
     "experience" => database.exec('SELECT id, role, company, period, points, "order", is_visible FROM portfolio_data_experienceitem ORDER BY "order", id').to_a,
     "skills" => database.exec('SELECT id, name, icon, is_clickable, project_names, "order", is_visible FROM portfolio_data_skillitem ORDER BY "order", id').to_a,
-    "projects" => database.exec('SELECT id, name, description, brief, stack, live_url, show_live_url, github_url, show_github_url, blog_url, image_url, video_url, image_alt, "order", is_visible FROM portfolio_data_projectitem ORDER BY "order", id').to_a,
+    "projects" => database.exec('SELECT id, name, category, description, brief, stack, live_url, show_live_url, github_url, show_github_url, blog_url, image_url, video_url, image_alt, "order", is_visible FROM portfolio_data_projectitem ORDER BY "order", id').to_a,
     "certifications" => database.exec('SELECT id, title, issuer, issued_date, credential_url, description, image_url, image_alt, "order", is_visible FROM portfolio_data_certificationitem ORDER BY "order", id').to_a
   }
   [{
@@ -548,7 +550,11 @@ def save_portfolio_admin_data(request)
     )
     replace_admin_collection("portfolio_data_experienceitem", %w[role company period points order is_visible], Array(collections["experience"]))
     replace_admin_collection("portfolio_data_skillitem", %w[name icon is_clickable project_names order is_visible], Array(collections["skills"]))
-    replace_admin_collection("portfolio_data_projectitem", %w[name description brief stack live_url show_live_url github_url show_github_url blog_url image_url video_url image_alt order is_visible], Array(collections["projects"]))
+    project_items = Array(collections["projects"])
+    project_items.each do |item|
+      item["category"] = "" unless ["live", "engineering"].include?(item["category"])
+    end
+    replace_admin_collection("portfolio_data_projectitem", %w[name category description brief stack live_url show_live_url github_url show_github_url blog_url image_url video_url image_alt order is_visible], project_items)
     replace_admin_collection("portfolio_data_certificationitem", %w[title issuer issued_date credential_url description image_url image_alt order is_visible], Array(collections["certifications"]))
   end
   [{ "detail" => "Portfolio content saved." }, 200]

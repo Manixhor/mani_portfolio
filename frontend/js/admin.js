@@ -12,6 +12,7 @@ const fields = {
   projects: [["name", "Project name"], ["description", "Description", "textarea"], ["brief", "Project brief", "textarea"], ["stack", "Tech stack"], ["live_url", "Live link", "url"], ["show_live_url", "Show live link", "checkbox"], ["github_url", "GitHub link", "url"], ["show_github_url", "Show GitHub link", "checkbox"], ["blog_url", "Blog link", "url"], ["image_url", "Image URL", "url"], ["video_url", "Video URL", "url"], ["image_alt", "Image alt text"], ["order", "Order", "number"], ["is_visible", "Visible", "checkbox"]],
   certifications: [["title", "Title"], ["issuer", "Issuer"], ["issued_date", "Issued date"], ["credential_url", "Credential link", "url"], ["description", "Description", "textarea"], ["image_url", "Image URL", "url"], ["image_alt", "Image alt text"], ["order", "Order", "number"], ["is_visible", "Visible", "checkbox"]],
 };
+fields.projects.splice(1, 0, ["category", "Project category", "select"]);
 const blankItems = Object.fromEntries(Object.entries(fields).map(([name, definitions]) => [name, Object.fromEntries(definitions.map(([key, , type]) => [key, type === "checkbox" ? true : type === "number" ? 0 : ""]))]));
 const siteFields = [
   ["hero.name", "Name"], ["hero.title", "Hero title"], ["hero.tagline", "Role tagline"], ["hero.year", "Year"], ["hero.resumeUrl", "Resume URL", "url"], ["hero.resumeLabel", "Resume button label"],
@@ -43,6 +44,20 @@ function renderCollection(name, items) {
     const remove = document.createElement("button"); remove.type = "button"; remove.className = "admin-remove"; remove.textContent = "Remove"; remove.addEventListener("click", () => card.remove()); card.appendChild(remove);
     fields[name].forEach(([key, label, type = "text"]) => {
       const field = document.createElement("label"); field.textContent = label;
+      if (type === "select") {
+        const select = document.createElement("select");
+        select.dataset.field = key;
+        [["", "Automatic (based on live link)"], ["live", "Live Projects"], ["engineering", "Engineering Projects"]].forEach(([value, text]) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = text;
+          select.appendChild(option);
+        });
+        select.value = item[key] || "";
+        field.appendChild(select);
+        card.appendChild(field);
+        return;
+      }
       const control = type === "textarea" ? document.createElement("textarea") : document.createElement("input");
       control.dataset.field = key; if (type === "checkbox") { control.type = "checkbox"; control.checked = item[key] === true || item[key] === "t"; } else { control.type = type; control.value = item[key] ?? ""; } field.appendChild(control); card.appendChild(field);
     });
