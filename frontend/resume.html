@@ -4,15 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Resume | Mani</title>
-  <link rel="stylesheet" href="/static/css/resume.css?v=4" />
+  <link rel="stylesheet" href="/static/css/resume.css?v=5" />
 </head>
 <body>
   <header class="toolbar">
-    <div class="resume-heading">
-      <p>Resume Preview</p>
-      <h1>Mani's Resume</h1>
-    </div>
-    <div class="controls" aria-label="Resume controls">
+    <h1 class="sr-only">Mani's Resume</h1>
+    <nav class="controls" aria-label="Resume navigation and controls">
       <a href="/" title="Back to portfolio" id="home">Home</a>
       <button id="previous" title="Previous page" aria-label="Previous page" disabled>&larr;</button>
       <output id="page-count" aria-live="polite">0 / 0</output>
@@ -23,7 +20,7 @@
       <button id="fit" title="Fit to width" disabled>Fit</button>
       <button id="download" title="Download resume" disabled>Download</button>
       <a id="open" target="_blank" rel="noopener noreferrer" hidden>Open PDF</a>
-    </div>
+    </nav>
   </header>
   <main>
     <p id="status" role="status">Loading resume...</p>

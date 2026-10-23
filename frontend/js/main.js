@@ -948,6 +948,10 @@ async function initializePortfolio() {
   setupMobileNav();
   setupContactForm();
   setupResumePreview();
+  const initialHero = Object.fromEntries(["title", "name", "tagline", "year"].map((key) => [
+    key, document.querySelector(`[data-content="hero-${key}"]`)?.textContent || "",
+  ]));
+  renderHero(initialHero);
 
   try {
     const config = await loadPortfolioConfig();
