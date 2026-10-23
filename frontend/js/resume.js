@@ -1,6 +1,9 @@
 const $ = (id) => document.getElementById(id);
 const status = $("status");
 const canvas = $("pdf");
+if (new URLSearchParams(location.search).get("embedded") === "1") {
+  document.body.classList.add("embedded");
+}
 let pdf, pdfBytes, resumeUrl, page = 1, zoom = 1, fitScale = 1;
 let rendering = false, pending = false;
 
@@ -12,6 +15,11 @@ async function render() {
     const current = await pdf.getPage(page);
     const base = current.getViewport({ scale: 1 });
     const viewportElement = $("viewport");
+    const oldWidth = canvas.getBoundingClientRect().width;
+    const oldHeight = canvas.getBoundingClientRect().height;
+    const canvasLeft = canvas.getBoundingClientRect().left - viewportElement.getBoundingClientRect().left;
+    const centerX = oldWidth ? (viewportElement.clientWidth / 2 - canvasLeft) / oldWidth : 0.5;
+    const centerY = oldHeight ? (viewportElement.scrollTop + viewportElement.clientHeight / 2) / oldHeight : 0;
     const styles = getComputedStyle(viewportElement);
     const width = viewportElement.clientWidth - parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
     fitScale = Math.min(width / base.width, 1.6);
@@ -52,6 +60,8 @@ async function render() {
     $("zoom-out").disabled = zoom <= 0.5;
     $("zoom-in").disabled = zoom >= 3;
     status.hidden = true;
+    viewportElement.scrollLeft = zoom === 1 ? 0 : centerX * (viewport.width / ratio) - viewportElement.clientWidth / 2;
+    viewportElement.scrollTop = oldHeight ? Math.max(0, centerY * (viewport.height / ratio) - viewportElement.clientHeight / 2) : 0;
   } catch {
     status.hidden = false;
     status.textContent = "The preview could not be displayed. You can still open or download the PDF.";
@@ -97,6 +107,7 @@ try {
   if (!file.ok) throw new Error();
   pdfBytes = await file.arrayBuffer();
   pdf = await pdfjs.getDocument({ data: pdfBytes.slice(0) }).promise;
+  document.body.classList.toggle("single-page", pdf.numPages === 1);
   $("fit").disabled = false;
   await render();
 } catch {

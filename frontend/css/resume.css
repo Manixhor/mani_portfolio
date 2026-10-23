@@ -1,17 +1,20 @@
 * { box-sizing: border-box; }
-body { margin: 0; background: #f1f2f3; color: #141414; font: 15px/1.5 Arial, sans-serif; }
+body { margin: 0; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; background: #f1f2f3; color: #141414; font: 15px/1.5 Arial, sans-serif; }
+main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .toolbar { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; padding: 14px 24px; background: white; border-bottom: 1px solid #ddd; }
 .resume-heading { min-width: 0; }
 .resume-heading p { margin: 0 0 4px; color: #56585c; font-size: 13px; font-weight: 800; line-height: 1.3; text-transform: uppercase; }
 h1 { font-size: 24px; font-weight: 800; line-height: 1.2; margin: 0; }
 .controls { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.embedded .resume-heading, .embedded #home, .embedded #open { display: none; }
+.embedded .controls { margin: 0 auto; justify-content: center; }
 button, .controls a { min-height: 40px; min-width: 40px; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; background: white; color: inherit; font: inherit; cursor: pointer; text-align: center; text-decoration: none; }
 button:hover:not(:disabled), .controls a:hover { background: #eee; }
 button:disabled { opacity: .4; cursor: default; }
 #download { background: #151515; color: white; border-color: #151515; }
 output { min-width: 58px; text-align: center; font-variant-numeric: tabular-nums; }
 #status { text-align: center; padding: 0 16px; }
-#viewport { width: 100%; overflow: auto; padding: 20px 16px 40px; }
+#viewport { flex: 1; min-height: 0; width: 100%; overflow: auto; overscroll-behavior: contain; padding: 20px 16px 40px; }
 canvas { display: block; margin: 0 auto; background: white; box-shadow: 0 2px 12px #0002; }
 #pdf-page { position: relative; width: max-content; margin: 0 auto; }
 #pdf-links { position: absolute; inset: 0; pointer-events: none; }
@@ -21,9 +24,13 @@ canvas { display: block; margin: 0 auto; background: white; box-shadow: 0 2px 12
 [hidden] { display: none !important; }
 :focus-visible { outline: 2px solid #1864ab; outline-offset: 3px; }
 @media (max-width: 640px) {
-  .toolbar { padding: 12px; gap: 8px 16px; }
-  .controls { margin: 0; width: 100%; gap: 6px; }
-  button, .controls a { min-height: 44px; padding: 8px 10px; }
-  output { min-width: 46px; }
+  .toolbar { padding: 8px 10px; gap: 6px; }
+  .resume-heading p { display: none; }
+  h1 { font-size: 18px; }
+  .controls { margin: 0; width: 100%; gap: 4px; font-size: 13px; }
+  button, .controls a { min-height: 40px; min-width: 32px; padding: 6px 8px; }
+  output { min-width: 40px; }
+  #open { margin-left: auto; }
+  .single-page #previous, .single-page #next, .single-page #page-count { display: none; }
   #viewport { padding: 12px 8px 24px; }
 }
