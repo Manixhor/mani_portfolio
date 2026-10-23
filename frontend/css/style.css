@@ -1848,8 +1848,6 @@ button.outline-button:disabled {
 .resume-modal__dialog {
   position: relative;
   width: min(1060px, 100%);
-  display: flex;
-  flex-direction: column;
   max-height: min(860px, calc(100dvh - 48px));
   overflow: hidden;
   border-radius: var(--radius-lg);
@@ -1934,8 +1932,7 @@ button.outline-button:disabled {
 
 .resume-modal__viewport {
   height: min(720px, calc(100dvh - 140px));
-  min-height: 0;
-  overflow: hidden;
+  overflow: auto;
   background: #f3f3f1;
 }
 
@@ -2629,23 +2626,17 @@ button.outline-button:disabled {
   }
 
   .resume-modal__header {
-    align-items: center;
-    flex-direction: row;
-    padding: 10px 12px;
-    gap: 8px;
+    align-items: flex-start;
+    flex-direction: column;
   }
 
-  .resume-modal__header p { display: none; }
-  .resume-modal__header h2 { font-size: 18px; }
-  .resume-modal__actions > a { display: none; }
-
   .resume-modal__actions {
-    width: auto;
-    justify-content: flex-end;
+    width: 100%;
+    justify-content: space-between;
   }
 
   .resume-modal__viewport {
-    height: calc(100dvh - 86px);
+    height: calc(100dvh - 206px);
   }
 
   .nav-brand {

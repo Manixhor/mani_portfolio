@@ -24,7 +24,12 @@ async function render() {
     const width = viewportElement.clientWidth - parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
     fitScale = Math.min(width / base.width, 1.6);
     const scale = fitScale * zoom;
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    // Pinch zoom magnifies CSS pixels; redraw the PDF with matching detail.
+    const pinchScale = window.visualViewport?.scale || 1;
+    const requestedRatio = (window.devicePixelRatio || 1) * pinchScale;
+    const cssViewport = current.getViewport({ scale });
+    const pixelBudgetRatio = Math.sqrt(12000000 / (cssViewport.width * cssViewport.height));
+    const ratio = Math.min(requestedRatio, 6, pixelBudgetRatio);
     const viewport = current.getViewport({ scale: scale * ratio });
     canvas.width = Math.ceil(viewport.width);
     canvas.height = Math.ceil(viewport.height);
@@ -86,9 +91,17 @@ $("download").onclick = () => {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 };
 let resizeTimer;
-window.addEventListener("resize", () => {
+function scheduleRender() {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { if (pdf) render(); }, 150);
+  resizeTimer = setTimeout(() => { if (pdf) render(); }, 180);
+}
+window.addEventListener("resize", scheduleRender);
+let lastPinchScale = window.visualViewport?.scale || 1;
+window.visualViewport?.addEventListener("resize", () => {
+  const scale = window.visualViewport.scale;
+  if (Math.abs(scale - lastPinchScale) < 0.01) return;
+  lastPinchScale = scale;
+  scheduleRender();
 });
 
 try {

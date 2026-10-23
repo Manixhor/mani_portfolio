@@ -699,11 +699,16 @@ const resumeDialog = resumeModal?.querySelector(".resume-modal__dialog");
 const resumeFrame = resumeModal?.querySelector("[data-resume-frame]");
 const resumeOpenLink = resumeModal?.querySelector("[data-resume-open]");
 
+function previewableResumeUrl(url) {
+  const driveFile = url.match(/^https?:\/\/drive\.google\.com\/file\/d\/([^/?]+)/i);
+  return driveFile ? `https://drive.google.com/file/d/${driveFile[1]}/preview` : url;
+}
+
 function openResumePreview(url) {
   if (!resumeModal || !resumeDialog || !resumeFrame || !resumeOpenLink || !url) return;
 
-  resumeOpenLink.href = "/resume";
-  resumeFrame.src = "/resume?embedded=1";
+  resumeOpenLink.href = url;
+  resumeFrame.src = previewableResumeUrl(url);
   resumeModal.classList.add("is-open");
   resumeModal.setAttribute("aria-hidden", "false");
   resumeDialog.focus();
