@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resume | Mani</title>
+  <link rel="stylesheet" href="/static/css/resume.css?v=1" />
+</head>
+<body>
+  <header class="toolbar">
+    <a href="/" class="home">Mani</a>
+    <h1>Resume</h1>
+    <div class="controls" aria-label="Resume controls">
+      <button id="previous" title="Previous page" aria-label="Previous page" disabled>&larr;</button>
+      <output id="page-count" aria-live="polite">0 / 0</output>
+      <button id="next" title="Next page" aria-label="Next page" disabled>&rarr;</button>
+      <button id="zoom-out" title="Zoom out" aria-label="Zoom out" disabled>&minus;</button>
+      <output id="zoom-level" aria-live="polite">100%</output>
+      <button id="zoom-in" title="Zoom in" aria-label="Zoom in" disabled>+</button>
+      <button id="fit" title="Fit to width" disabled>Fit</button>
+      <button id="download" title="Download resume" disabled>Download</button>
+      <a id="open" target="_blank" rel="noopener noreferrer" hidden>Open PDF</a>
+    </div>
+  </header>
+  <main>
+    <p id="status" role="status">Loading resume...</p>
+    <div id="viewport" tabindex="0" aria-label="Resume preview">
+      <canvas id="pdf" aria-label="Resume page" role="img" hidden></canvas>
+    </div>
+  </main>
+  <script type="module" src="/static/js/resume.js?v=1"></script>
+</body>
+</html>

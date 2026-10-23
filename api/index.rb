@@ -767,6 +767,8 @@ Handler = proc do |request, response|
     end
   elsif path == "/" || path.empty?
     static_file(response, File.join(FRONTEND, "index.html"))
+  elsif path == "/resume" || path == "/resume/"
+    static_file(response, File.join(FRONTEND, "resume.html"))
   elsif path == "/blogs/" || path == "/blogs" || path == "/blogs/admin/" || path == "/blogs/admin"
     static_file(response, File.join(FRONTEND, "blogs.html"))
   elsif path.match?(%r{\A/blogs/\d+/?\z})
