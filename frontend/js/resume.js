@@ -7,6 +7,7 @@ let rendering = false, pending = false;
 async function render() {
   if (rendering) { pending = true; return; }
   rendering = true;
+  $("pdf-links").replaceChildren();
   try {
     const current = await pdf.getPage(page);
     const base = current.getViewport({ scale: 1 });
@@ -22,6 +23,26 @@ async function render() {
     canvas.style.width = `${viewport.width / ratio}px`;
     canvas.style.height = `${viewport.height / ratio}px`;
     await current.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+    const linkViewport = current.getViewport({ scale });
+    const annotations = await current.getAnnotations({ intent: "display" });
+    for (const annotation of annotations) {
+      if (annotation.subtype !== "Link" || !annotation.url || !annotation.rect) continue;
+      let url;
+      try { url = new URL(annotation.url); } catch { continue; }
+      if (!["https:", "http:", "mailto:", "tel:"].includes(url.protocol)) continue;
+      const rect = linkViewport.convertToViewportRectangle(annotation.rect);
+      const link = document.createElement("a");
+      link.href = url.href;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.title = url.href;
+      link.setAttribute("aria-label", annotation.titleObj?.str || url.href);
+      link.style.left = `${Math.min(rect[0], rect[2])}px`;
+      link.style.top = `${Math.min(rect[1], rect[3])}px`;
+      link.style.width = `${Math.abs(rect[2] - rect[0])}px`;
+      link.style.height = `${Math.abs(rect[3] - rect[1])}px`;
+      $("pdf-links").appendChild(link);
+    }
     canvas.hidden = false;
     canvas.setAttribute("aria-label", `Resume page ${page} of ${pdf.numPages}`);
     $("page-count").textContent = `${page} / ${pdf.numPages}`;

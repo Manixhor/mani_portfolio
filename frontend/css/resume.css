@@ -13,6 +13,11 @@ output { min-width: 58px; text-align: center; font-variant-numeric: tabular-nums
 #status { text-align: center; padding: 0 16px; }
 #viewport { width: 100%; overflow: auto; padding: 20px 16px 40px; }
 canvas { display: block; margin: 0 auto; background: white; box-shadow: 0 2px 12px #0002; }
+#pdf-page { position: relative; width: max-content; margin: 0 auto; }
+#pdf-links { position: absolute; inset: 0; pointer-events: none; }
+#pdf-links a { position: absolute; display: block; pointer-events: auto; border-radius: 2px; }
+#pdf-links a:hover { background: #1864ab18; }
+#pdf-links a:focus-visible { outline: 2px solid #1864ab; }
 [hidden] { display: none !important; }
 :focus-visible { outline: 2px solid #1864ab; outline-offset: 3px; }
 @media (max-width: 640px) {
